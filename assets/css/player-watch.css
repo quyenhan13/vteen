@@ -289,7 +289,7 @@
 
 .main-container {
     width: min(100%, 1100px) !important;
-    margin: 0 auto !important;
+    margin: 84px auto 0 !important;
     padding: clamp(14px, 3vw, 24px) 15px 60px;
     display: flex;
     flex-direction: column;

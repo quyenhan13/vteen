@@ -4,18 +4,22 @@
 (function (window) {
     'use strict';
 
+    if (window.location.protocol === 'http:' && !/^(localhost|127\.0\.0\.1)$/i.test(window.location.hostname)) {
+        window.location.replace('https:' + window.location.href.substring(window.location.protocol.length));
+    }
+
     const FALLBACK_POSTER = 'uploads/posters/poster_1777079252132.jpg';
     const STORAGE_KEYS = {
         SESSION: 'vteen_auth_session_v1',
         GH_CONFIG: 'vteen_github_config_v1',
-        MOVIES_CACHE: 'vteen_movies_override_v4',
+        MOVIES_CACHE: 'vteen_movies_override_v5',
         IMAGES_CACHE: 'vteen_images_override_v1',
         DRIVE_CACHE: 'vteen_drive_override_v1',
         USERS_CACHE: 'vteen_users_override_v1'
     };
 
     try {
-        ['vteen_movies_override_v1', 'vteen_movies_override_v2', 'vteen_movies_override_v3'].forEach(k => localStorage.removeItem(k));
+        ['vteen_movies_override_v1', 'vteen_movies_override_v2', 'vteen_movies_override_v3', 'vteen_movies_override_v4'].forEach(k => localStorage.removeItem(k));
     } catch (e) {}
 
     function isSubFolder() {

@@ -7,9 +7,9 @@
     <title>Xem phim - VTEEN</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="assets/css/vteen-all.css?v=20261008">
-    <link rel="stylesheet" href="assets/css/player-watch.css?v=20261008">
-    <link rel="stylesheet" href="assets/css/universe-stream.css?v=20261008">
+    <link rel="stylesheet" href="assets/css/vteen-all.css?v=20261009">
+    <link rel="stylesheet" href="assets/css/player-watch.css?v=20261009">
+    <link rel="stylesheet" href="assets/css/universe-stream.css?v=20261009">
 </head>
 <body class="universe-stream-page">
 <header class="navbar">
@@ -96,8 +96,8 @@
     </div>
 </footer>
 
-<script src="assets/js/vteen-core.js?v=20261008"></script>
-<script src="assets/js/universe-stream.js?v=20261008"></script>
+<script src="assets/js/vteen-core.js?v=20261009"></script>
+<script src="assets/js/universe-stream.js?v=20261009"></script>
 <script>
 (function () {
     let SERVERS = {};
@@ -236,7 +236,7 @@
             fallbackAttempted = true;
             const liveUrl = await fetchLiveFallbackLink(activeMeta.seriesName, activeMeta.slug, activeMeta.epNum);
             if (liveUrl) {
-                SERVERS[2] = `embed.html?v=20261008&url=${encodeURIComponent(liveUrl)}`;
+                SERVERS[2] = `embed.html?v=20261009&url=${encodeURIComponent(liveUrl)}`;
                 switchServer(2, false);
             }
         }
@@ -285,10 +285,10 @@
         }
 
         if (link1) {
-            SERVERS[1] = `embed.html?v=20261008&url=${encodeURIComponent(link1)}`;
+            SERVERS[1] = `embed.html?v=20261009&url=${encodeURIComponent(link1)}`;
         }
         if (link2) {
-            SERVERS[2] = `embed.html?v=20261008&url=${encodeURIComponent(link2)}`;
+            SERVERS[2] = `embed.html?v=20261009&url=${encodeURIComponent(link2)}`;
         }
 
         const serverList = document.getElementById('serverList');
