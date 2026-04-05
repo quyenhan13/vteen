@@ -8,7 +8,7 @@
     const STORAGE_KEYS = {
         SESSION: 'vteen_auth_session_v1',
         GH_CONFIG: 'vteen_github_config_v1',
-        MOVIES_CACHE: 'vteen_movies_override_v1',
+        MOVIES_CACHE: 'vteen_movies_override_v2',
         IMAGES_CACHE: 'vteen_images_override_v1',
         USERS_CACHE: 'vteen_users_override_v1'
     };
@@ -63,6 +63,20 @@
         return resolveUrl(FALLBACK_POSTER);
     }
 
+    function normalizeMovieUrl(rawUrl) {
+        let link = String(rawUrl || '').trim();
+        if (!link) return '';
+        const clbMatch = link.match(/clbphimxua\.com\/clbpx\.html\?v=([A-Za-z0-9_-]+)/i);
+        if (clbMatch) return `https://abysscdn.com/?v=${clbMatch[1]}`;
+        const shortMatch = link.match(/short\.icu\/([A-Za-z0-9_-]+)/i);
+        if (shortMatch) return `https://abysscdn.com/?v=${shortMatch[1]}`;
+        const driveMatch = link.match(/drive\.google\.com\/.*?\/d\/([^/]+)/i);
+        if (driveMatch) return `https://drive.google.com/file/d/${driveMatch[1]}/preview`;
+        const dmMatch = link.match(/(?:dailymotion\.com\/video|dai\.ly)\/([a-z0-9]+)/i);
+        if (dmMatch) return `https://www.dailymotion.com/embed/video/${dmMatch[1]}?autoplay=1`;
+        return link;
+    }
+
     function processAndCleanLinks(text) {
         const raw = String(text || '');
         const found = [];
@@ -81,15 +95,7 @@
         for (let link of unique) {
             try {
                 new URL(link);
-                const driveMatch = link.match(/drive\.google\.com\/.*?\/d\/([^/]+)/i);
-                if (driveMatch) {
-                    link = `https://drive.google.com/file/d/${driveMatch[1]}/preview`;
-                }
-                const dmMatch = link.match(/(?:dailymotion\.com\/video|dai\.ly)\/([a-z0-9]+)/i);
-                if (dmMatch) {
-                    link = `https://www.dailymotion.com/embed/video/${dmMatch[1]}?autoplay=1`;
-                }
-                clean.push(link);
+                clean.push(normalizeMovieUrl(link));
             } catch (e) {}
         }
         return clean;
@@ -514,6 +520,7 @@
         slugify,
         getPosterUrl,
         getFallbackPoster,
+        normalizeMovieUrl,
         processAndCleanLinks,
         auth,
         github,

@@ -73,6 +73,16 @@
         return;
     }
 
+    // Normalize legacy Abyss/Hydrax & Drive/Dailymotion URLs
+    const clbMatch = link.match(/clbphimxua\.com\/clbpx\.html\?v=([A-Za-z0-9_-]+)/i);
+    if (clbMatch) link = `https://abysscdn.com/?v=${clbMatch[1]}`;
+    const shortMatch = link.match(/short\.icu\/([A-Za-z0-9_-]+)/i);
+    if (shortMatch) link = `https://abysscdn.com/?v=${shortMatch[1]}`;
+    const driveMatch = link.match(/drive\.google\.com\/.*?\/d\/([^/]+)/i);
+    if (driveMatch) link = `https://drive.google.com/file/d/${driveMatch[1]}/preview`;
+    const dmMatch = link.match(/(?:dailymotion\.com\/video|dai\.ly)\/([a-z0-9]+)/i);
+    if (dmMatch) link = `https://www.dailymotion.com/embed/video/${dmMatch[1]}?autoplay=1`;
+
     let parsed;
     try {
         parsed = new URL(link);
@@ -87,7 +97,6 @@
     const isM3U8 = link.toLowerCase().includes('.m3u8');
     const isDirectVideo = isM3U8 || ['mp4', 'webm', 'mov'].includes(ext);
 
-    // Check YouTube
     let ytId = '';
     if (host.includes('youtube.com') || host.includes('youtube-nocookie.com') || host === 'youtu.be') {
         const vParam = parsed.searchParams.get('v');
@@ -105,8 +114,16 @@
         ytId = ytId.replace(/[^a-zA-Z0-9_-]/g, '');
     }
 
+    function notifyParentError() {
+        try {
+            if (window.parent && window.parent !== window) {
+                window.parent.postMessage({ type: 'VTEEN_PLAYER_ERROR', url: link }, '*');
+            }
+        } catch (e) {}
+    }
+
     if (isDirectVideo) {
-        root.innerHTML = `<video id="v" playsinline controls></video>`;
+        root.innerHTML = `<video id="v" playsinline controls crossorigin="anonymous"></video>`;
         const video = document.getElementById('v');
         const defaultOptions = {
             autoplay: true,
@@ -119,15 +136,15 @@
         };
 
         if (isM3U8) {
-            if (video.canPlayType('application/vnd.apple.mpegurl')) {
-                video.src = link;
-                new Plyr(video, defaultOptions);
-            } else if (typeof Hls !== 'undefined' && Hls.isSupported()) {
-                const hls = new Hls();
+            if (typeof Hls !== 'undefined' && Hls.isSupported()) {
+                const hls = new Hls({
+                    enableWorker: true,
+                    lowLatencyMode: false
+                });
                 hls.loadSource(link);
                 hls.attachMedia(video);
                 hls.on(Hls.Events.MANIFEST_PARSED, function () {
-                    const availableQualities = hls.levels.map(l => l.height);
+                    const availableQualities = hls.levels.map(l => l.height).filter(Boolean);
                     availableQualities.unshift(0);
                     defaultOptions.quality = {
                         default: 0,
@@ -144,10 +161,30 @@
                         }
                     };
                     new Plyr(video, defaultOptions);
+                    video.play().catch(() => {});
                 });
+                hls.on(Hls.Events.ERROR, function (event, data) {
+                    if (data && data.fatal) {
+                        switch (data.type) {
+                            case Hls.ErrorTypes.MEDIA_ERROR:
+                                hls.recoverMediaError();
+                                break;
+                            default:
+                                hls.destroy();
+                                notifyParentError();
+                                root.innerHTML = '<div class="msg-center">Nguồn phát M3U8 này đang bảo trì, hệ thống đang chuyển Server dự phòng...</div>';
+                                break;
+                        }
+                    }
+                });
+            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                video.src = link;
+                video.addEventListener('error', notifyParentError);
+                new Plyr(video, defaultOptions);
             }
         } else {
             video.src = link;
+            video.addEventListener('error', notifyParentError);
             new Plyr(video, defaultOptions);
         }
     } else if (ytId) {
@@ -191,13 +228,17 @@
             } catch (err) {}
         });
     } else {
+        if (window.self !== window.top) {
+            window.location.replace(link);
+            return;
+        }
         root.innerHTML = `
             <iframe
                 class="full-iframe"
                 src="${link.replace(/"/g, '&quot;')}"
                 allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
                 allowfullscreen
-                referrerpolicy="no-referrer"
+                referrerpolicy="strict-origin-when-cross-origin"
             ></iframe>
         `;
     }

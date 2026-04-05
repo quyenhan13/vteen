@@ -42,7 +42,7 @@
     <div class="player-wrapper">
         <div class="player-box">
             <div class="iframe-container">
-                <iframe id="main-player" src="about:blank" allowfullscreen frameborder="0" scrolling="no" referrerpolicy="no-referrer" allow="autoplay; encrypted-media"></iframe>
+                <iframe id="main-player" src="about:blank" allowfullscreen frameborder="0" scrolling="no" referrerpolicy="strict-origin-when-cross-origin" allow="autoplay; fullscreen; encrypted-media; picture-in-picture"></iframe>
                 <div id="player-loader">Vteen Yêu Em...</div>
             </div>
         </div>
@@ -101,6 +101,22 @@
 <script>
 (function () {
     let SERVERS = {};
+    let currentSv = 1;
+    let activeMeta = { seriesName: '', slug: '', epNum: 1 };
+    let fallbackAttempted = false;
+
+    function initParticles() {
+        const container = document.getElementById('particles');
+        if (!container) return;
+        for (let i = 0; i < 30; i++) {
+            const p = document.createElement('div');
+            p.className = 'particle';
+            p.style.left = (Math.random() * 100) + 'vw';
+            p.style.animationDuration = (Math.random() * 7 + 6) + 's';
+            p.style.animationDelay = (Math.random() * 5) + 's';
+            container.appendChild(p);
+        }
+    }
 
     function switchServer(sv, isManual = false) {
         const player = document.getElementById('main-player');
@@ -108,6 +124,7 @@
         const btn1 = document.getElementById('sv1');
         const btn2 = document.getElementById('sv2');
 
+        currentSv = sv;
         if (btn1) btn1.classList.remove('active');
         if (btn2) btn2.classList.remove('active');
 
@@ -135,6 +152,76 @@
 
     window.switchServer = switchServer;
 
+    async function fetchLiveFallbackLink(seriesName, slug, epNum) {
+        const cleanKw = String(seriesName || '')
+            .replace(/[–-]\s*\d+\s*Tập.*$/i, '')
+            .replace(/-\s*Tập\s*Full.*$/i, '')
+            .replace(/\(Điện Ảnh\)/i, '')
+            .replace(/\b(19\d\d|20\d\d)\b/g, '')
+            .trim();
+        const cleanSlug = String(slug || '')
+            .replace(/-(19|20)\d\d-\d+-tap$/, '')
+            .replace(/-\d+-tap$/, '');
+
+        // Try KKPhim API first (direct M3U8)
+        try {
+            let kkSlug = cleanSlug;
+            const searchRes = await fetch(`https://phimapi.com/v1/api/tim-kiem?keyword=${encodeURIComponent(cleanKw)}&limit=5`);
+            if (searchRes.ok) {
+                const searchData = await searchRes.json();
+                const items = (searchData.data && searchData.data.items) || [];
+                if (items.length > 0) kkSlug = items[0].slug;
+            }
+            const detailRes = await fetch(`https://phimapi.com/phim/${encodeURIComponent(kkSlug)}`);
+            if (detailRes.ok) {
+                const detail = await detailRes.json();
+                for (const srv of (detail.episodes || [])) {
+                    for (const item of (srv.server_data || [])) {
+                        const nums = String(item.name || item.slug || '').match(/\d+/g);
+                        const num = nums ? parseInt(nums[nums.length - 1], 10) : 1;
+                        if (num === epNum && item.link_m3u8) {
+                            return item.link_m3u8;
+                        }
+                    }
+                }
+            }
+        } catch (e) {}
+
+        // Try NguonC API next
+        try {
+            const ncRes = await fetch(`https://phim.nguonc.com/api/film/${encodeURIComponent(cleanSlug)}`);
+            if (ncRes.ok) {
+                const ncData = await ncRes.json();
+                for (const srv of ((ncData.movie && ncData.movie.episodes) || [])) {
+                    for (const item of (srv.items || [])) {
+                        const nums = String(item.name || item.slug || '').match(/\d+/g);
+                        const num = nums ? parseInt(nums[nums.length - 1], 10) : 1;
+                        if (num === epNum && item.embed) {
+                            return item.embed;
+                        }
+                    }
+                }
+            }
+        } catch (e) {}
+        return '';
+    }
+
+    window.addEventListener('message', async (e) => {
+        if (!e.data || e.data.type !== 'VTEEN_PLAYER_ERROR') return;
+        if (currentSv === 1 && SERVERS[2]) {
+            switchServer(2, false);
+            return;
+        }
+        if (!fallbackAttempted) {
+            fallbackAttempted = true;
+            const liveUrl = await fetchLiveFallbackLink(activeMeta.seriesName, activeMeta.slug, activeMeta.epNum);
+            if (liveUrl) {
+                SERVERS[2] = `embed.html?url=${encodeURIComponent(liveUrl)}`;
+                switchServer(2, false);
+            }
+        }
+    });
+
     async function initWatchPage() {
         const params = new URLSearchParams(window.location.search);
         const slug = (params.get('slug') || '').trim();
@@ -158,6 +245,7 @@
         let currentMovie = episodes.find(m => (parseInt(m.episode, 10) || 1) === requestedEp) || episodes[0];
         const currentEpNum = parseInt(currentMovie.episode, 10) || 1;
         const seriesName = currentMovie.series_name || currentMovie.title || 'Phim VTEEN';
+        activeMeta = { seriesName, slug, epNum: currentEpNum };
 
         document.title = `Xem phim ${seriesName} Tập ${currentEpNum} - VTEEN`;
         document.getElementById('movieTitle').textContent = seriesName;
@@ -166,11 +254,13 @@
             currentMovie.description || `Phim ${seriesName} đang được cập nhật thông tin chi tiết. Chúc bạn xem phim vui vẻ!`;
 
         SERVERS = {};
-        if (currentMovie.embed_link) {
-            SERVERS[1] = `embed.html?url=${encodeURIComponent(currentMovie.embed_link)}`;
+        const link1 = VTeen.normalizeMovieUrl(currentMovie.embed_link);
+        const link2 = VTeen.normalizeMovieUrl(currentMovie.embed_link_2);
+        if (link1) {
+            SERVERS[1] = `embed.html?url=${encodeURIComponent(link1)}`;
         }
-        if (currentMovie.embed_link_2) {
-            SERVERS[2] = `embed.html?url=${encodeURIComponent(currentMovie.embed_link_2)}`;
+        if (link2) {
+            SERVERS[2] = `embed.html?url=${encodeURIComponent(link2)}`;
         }
 
         const serverList = document.getElementById('serverList');
@@ -201,7 +291,6 @@
             document.getElementById('player-loader').textContent = '⚠️ Chưa có link phim. Hãy thêm embed_link trong Admin.';
         }
 
-        // Phim gợi ý (8 phim ngẫu nhiên khác)
         const grouped = await VTeen.db.getGroupedMovies();
         const others = grouped.filter(g => g.slug !== slug);
         for (let i = others.length - 1; i > 0; i--) {
@@ -222,6 +311,7 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
+        initParticles();
         initWatchPage();
         const copyBtn = document.getElementById('copyLinkBtn');
         if (copyBtn) {

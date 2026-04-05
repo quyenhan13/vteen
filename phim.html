@@ -25,6 +25,8 @@
     </div>
 </header>
 
+<div class="particles" id="particles"></div>
+
 <main class="phim-page">
     <section class="compact-header">
         <div class="header-left">
@@ -178,6 +180,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         }).join('');
     }
 
+    function createParticles() {
+        const container = document.getElementById('particles');
+        if (!container) return;
+        for (let i = 0; i < 36; i++) {
+            const p = document.createElement('div');
+            p.className = 'particle';
+            p.style.left = (Math.random() * 100) + 'vw';
+            p.style.animationDuration = (Math.random() * 7 + 6) + 's';
+            p.style.animationDelay = (Math.random() * 5) + 's';
+            container.appendChild(p);
+        }
+    }
+
+    createParticles();
     await renderMovies(initialSearch);
 
     searchForm.addEventListener('submit', (e) => {
