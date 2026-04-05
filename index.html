@@ -85,7 +85,7 @@
                             <div class="upload-head">
                                 <div>
                                     <h2>Dang anh va video</h2>
-                                    <p id="uploadSubtitle">Dang nhap de bat dau upload anh va video.</p>
+                                    <p id="uploadSubtitle">Keo tha file de len song trong showcase va tao link chia se nhanh.</p>
                                 </div>
                                 <div class="upload-badge">Git Storage</div>
                             </div>
@@ -93,10 +93,11 @@
                             <div class="drop-zone-modern" id="dropZone">
                                 <div class="drop-content" id="dropContent">
                                     <div class="upload-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
-                                    <strong id="dropZoneText">Vui long dang nhap</strong>
+                                    <strong id="dropZoneText">Chon hoac keo tha file</strong>
                                     <p>Ho tro JPG, PNG, GIF, WEBP, MP4, MOV, WEBM</p>
                                     <div id="uploadActionSlot">
-                                        <a class="upload-login-link" href="login.html">Dang nhap</a>
+                                        <button type="button" id="chooseFileBtn">Chon file</button>
+                                        <input type="file" id="fileInput" hidden accept="image/*,video/mp4,video/webm,video/quicktime">
                                     </div>
                                 </div>
                             </div>
@@ -289,24 +290,14 @@
     }
 
     function setupUploadUI() {
-        const isAuth = VTeen.auth.isLoggedIn();
-        const subtitle = document.getElementById('uploadSubtitle');
         const dropText = document.getElementById('dropZoneText');
-        const slot = document.getElementById('uploadActionSlot');
         const dropZone = document.getElementById('dropZone');
         const resultBox = document.getElementById('resultBox');
         const shareLink = document.getElementById('shareLink');
         const copyButton = document.getElementById('copyButton');
+        const fileInput = document.getElementById('fileInput');
 
-        if (isAuth) {
-            subtitle.textContent = 'Keo tha file de len song trong showcase va tao link chia se nhanh.';
-            dropText.textContent = 'Chon hoac keo tha file';
-            slot.innerHTML = `
-                <button type="button" id="chooseFileBtn">Chon file</button>
-                <input type="file" id="fileInput" hidden accept="image/*,video/mp4,video/webm,video/quicktime">
-            `;
-
-            const fileInput = document.getElementById('fileInput');
+        if (dropZone && fileInput) {
             dropZone.addEventListener('click', () => fileInput.click());
             fileInput.addEventListener('change', (e) => {
                 if (e.target.files[0]) handleFileUpload(e.target.files[0]);
