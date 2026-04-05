@@ -10,6 +10,7 @@
         GH_CONFIG: 'vteen_github_config_v1',
         MOVIES_CACHE: 'vteen_movies_override_v4',
         IMAGES_CACHE: 'vteen_images_override_v1',
+        DRIVE_CACHE: 'vteen_drive_override_v1',
         USERS_CACHE: 'vteen_users_override_v1'
     };
 
@@ -19,7 +20,7 @@
 
     function isSubFolder() {
         const path = window.location.pathname.replace(/\\/g, '/');
-        return /\/(admin|tube)(\/|$)/.test(path);
+        return /\/(admin|tube|driver)(\/|$)/.test(path);
     }
 
     function rootPrefix() {
@@ -317,6 +318,7 @@
     // --- DATABASE LAYER (JSON + Local Override + GitHub Commit) ---
     let memoryMovies = null;
     let memoryImages = null;
+    let memoryDrive = null;
     let memoryPosters = null;
     let memoryUsers = null;
 
@@ -381,6 +383,31 @@
             }
             return { synced: false };
         },
+        async getDriveFiles() {
+            if (memoryDrive) return memoryDrive;
+            const localRaw = localStorage.getItem(STORAGE_KEYS.DRIVE_CACHE);
+            if (localRaw) {
+                try {
+                    const parsed = JSON.parse(localRaw);
+                    if (Array.isArray(parsed)) {
+                        memoryDrive = parsed;
+                        return memoryDrive;
+                    }
+                } catch (e) {}
+            }
+            memoryDrive = await fetchJson('data/drive.json', []);
+            return memoryDrive;
+        },
+        async saveDriveFiles(files, commitMsg = 'Update drive.json via VTEEN Drive') {
+            memoryDrive = files;
+            try {
+                localStorage.setItem(STORAGE_KEYS.DRIVE_CACHE, JSON.stringify(files));
+            } catch (e) {}
+            if (github.isConfigured()) {
+                return await github.saveJsonFile('data/drive.json', files, commitMsg);
+            }
+            return { synced: false };
+        },
         async getPosters() {
             if (memoryPosters) return memoryPosters;
             memoryPosters = await fetchJson('data/posters.json', [FALLBACK_POSTER]);
@@ -417,9 +444,11 @@
         clearLocalOverrides() {
             localStorage.removeItem(STORAGE_KEYS.MOVIES_CACHE);
             localStorage.removeItem(STORAGE_KEYS.IMAGES_CACHE);
+            localStorage.removeItem(STORAGE_KEYS.DRIVE_CACHE);
             localStorage.removeItem(STORAGE_KEYS.USERS_CACHE);
             memoryMovies = null;
             memoryImages = null;
+            memoryDrive = null;
             memoryUsers = null;
         },
         async getGroupedMovies(searchQuery = '') {
@@ -470,9 +499,10 @@
         const path = window.location.pathname.replace(/\\/g, '/');
         const isHome = /(^|\/)(index\.html)?$/.test(path) && !isSubFolder() && !window.location.search.includes('login=1');
         const isPhim = /phim\.html$/.test(path);
-        const isTube = /\/tube\//.test(path);
+        const isDriver = /\/driver(\/|$)|driver\.html$/.test(path);
+        const isTube = /\/tube(\/|$)/.test(path);
         const isLogin = /login\.html$/.test(path) || window.location.search.includes('login=1');
-        const isAdminPage = /\/admin\//.test(path);
+        const isAdminPage = /\/admin(\/|$)/.test(path);
 
         menu.innerHTML = `
             <a href="${resolveUrl('index.html')}" class="${isHome ? 'active' : ''}">
@@ -482,6 +512,10 @@
             <a href="${resolveUrl('phim.html')}" class="${isPhim ? 'active' : ''}">
                 <i class="fa fa-film"></i>
                 <span>Phim</span>
+            </a>
+            <a href="${resolveUrl('driver/index.html')}" class="${isDriver ? 'active' : ''}">
+                <i class="fa-brands fa-google-drive" style="color: #00f2ff;"></i>
+                <span>Driver</span>
             </a>
             <a href="${resolveUrl('tube/index.html')}" class="${isTube ? 'active' : ''}">
                 <i class="fa-brands fa-youtube" style="color: #ff0000;"></i>

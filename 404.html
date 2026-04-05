@@ -25,11 +25,19 @@
             return;
         }
 
-        // Handle /p/code
-        const pMatch = path.match(/^(.*)\/p\/([a-z0-9]+)\/?$/i);
+        // Handle /p/code or /s/code
+        const pMatch = path.match(/^(.*)\/(?:p|s)\/([a-z0-9]+)\/?$/i);
         if (pMatch) {
             const base = pMatch[1] || '';
             loc.replace(`${base}/p.html?code=${encodeURIComponent(pMatch[2])}`);
+            return;
+        }
+
+        // Handle /driver
+        const drvMatch = path.match(/^(.*)\/driver\/?$/i);
+        if (drvMatch) {
+            const base = drvMatch[1] || '';
+            loc.replace(`${base}/driver/index.html${search}`);
             return;
         }
 

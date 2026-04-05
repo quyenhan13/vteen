@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VTEEN DRIVE - Cosmic Storage System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../assets/css/vteen-all.css">
+    <link rel="stylesheet" href="../assets/css/universe-stream.css">
+    <style>
+        .vtd-wrap { max-width: 1200px; margin: 0 auto; padding: 24px 16px 80px; }
+        .vtd-header {
+            display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+            gap: 20px; padding: 24px; border-radius: 20px; margin-bottom: 24px;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(15, 23, 42, 0.85));
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+        }
+        .vtd-brand { display: flex; align-items: center; gap: 16px; }
+        .vtd-brand-icon {
+            width: 56px; height: 56px; border-radius: 16px;
+            background: rgba(16, 185, 129, 0.18); border: 1px solid rgba(16, 185, 129, 0.4);
+            display: flex; align-items: center; justify-content: center;
+            color: #10b981; font-size: 1.65rem;
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.25);
+        }
+        .vtd-brand-title { font-size: 1.5rem; font-weight: 900; letter-spacing: 1px; color: #fff; margin: 0; }
+        .vtd-brand-sub { font-size: 0.78rem; color: #10b981; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; margin-top: 4px; }
+        .vtd-quota {
+            flex: 1; min-width: 260px; max-width: 420px;
+            background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 14px 18px; border-radius: 14px;
+        }
+        .vtd-quota-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 0.78rem; }
+        .vtd-quota-label { color: rgba(255, 255, 255, 0.7); font-weight: 700; letter-spacing: 0.5px; }
+        .vtd-quota-val { color: #10b981; font-weight: 800; }
+        .vtd-quota-bar { height: 7px; background: rgba(255, 255, 255, 0.08); border-radius: 999px; overflow: hidden; }
+        .vtd-quota-fill { height: 100%; background: linear-gradient(90deg, #10b981, #34d399); border-radius: 999px; transition: width 0.35s ease; }
+        .vtd-controls {
+            display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+            gap: 14px; margin-bottom: 22px;
+        }
+        .vtd-tabs { display: flex; flex-wrap: wrap; gap: 8px; }
+        .vtd-tab {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 9px 16px; border-radius: 999px; font-size: 0.85rem; font-weight: 700;
+            background: rgba(255, 255, 255, 0.05); color: rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.1); cursor: pointer; transition: all 0.2s;
+        }
+        .vtd-tab:hover { background: rgba(255, 255, 255, 0.1); color: #fff; }
+        .vtd-tab.active {
+            background: rgba(16, 185, 129, 0.18); color: #10b981;
+            border-color: rgba(16, 185, 129, 0.5); box-shadow: 0 0 14px rgba(16, 185, 129, 0.2);
+        }
+        .vtd-right-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; flex: 1; justify-content: flex-end; }
+        .vtd-search {
+            position: relative; min-width: 240px; max-width: 340px; flex: 1;
+        }
+        .vtd-search i {
+            position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.45); font-size: 0.9rem;
+        }
+        .vtd-search input {
+            width: 100%; padding: 10px 14px 10px 38px; border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #fff; font-size: 0.9rem; outline: none; transition: border-color 0.2s;
+        }
+        .vtd-search input:focus { border-color: #10b981; background: rgba(255, 255, 255, 0.08); }
+        .vtd-upload-btn {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 10px 18px; border-radius: 12px; font-weight: 800; font-size: 0.88rem;
+            background: linear-gradient(135deg, #10b981, #059669); color: #052e16;
+            border: none; cursor: pointer; transition: transform 0.15s, box-shadow 0.2s;
+            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+        }
+        .vtd-upload-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5); }
+        .vtd-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 18px;
+        }
+        .vtd-card {
+            background: rgba(255, 255, 255, 0.035); border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px; overflow: hidden; display: flex; flex-direction: column;
+            transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+        }
+        .vtd-card:hover {
+            transform: translateY(-3px); border-color: rgba(16, 185, 129, 0.45);
+            box-shadow: 0 10px 26px rgba(0, 0, 0, 0.4);
+        }
+        .vtd-preview {
+            position: relative; width: 100%; height: 155px; background: rgba(0, 0, 0, 0.4);
+            display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: pointer;
+        }
+        .vtd-preview img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; }
+        .vtd-card:hover .vtd-preview img { transform: scale(1.04); }
+        .vtd-preview-icon { font-size: 3rem; color: rgba(255, 255, 255, 0.25); }
+        .vtd-type-tag {
+            position: absolute; top: 8px; left: 8px;
+            background: rgba(0, 0, 0, 0.72); backdrop-filter: blur(4px);
+            padding: 3px 8px; border-radius: 6px; font-size: 0.68rem; font-weight: 800;
+            color: #fff; letter-spacing: 0.5px; text-transform: uppercase;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+        .vtd-badge {
+            position: absolute; top: 8px; right: 8px;
+            background: rgba(16, 185, 129, 0.88); color: #042f2e;
+            padding: 3px 8px; border-radius: 6px; font-size: 0.68rem; font-weight: 800;
+        }
+        .vtd-body { padding: 12px 14px; display: flex; flex-direction: column; flex: 1; }
+        .vtd-title {
+            font-size: 0.9rem; font-weight: 700; color: #fff;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 6px;
+        }
+        .vtd-meta {
+            display: flex; justify-content: space-between; align-items: center;
+            font-size: 0.75rem; color: rgba(255, 255, 255, 0.45); margin-bottom: 12px;
+        }
+        .vtd-actions { display: flex; align-items: center; gap: 6px; margin-top: auto; }
+        .vtd-btn-view {
+            flex: 1; background: rgba(16, 185, 129, 0.14); border: 1px solid rgba(16, 185, 129, 0.35);
+            color: #10b981; font-size: 0.75rem; font-weight: 800; padding: 7px 10px;
+            border-radius: 8px; cursor: pointer; text-align: center; transition: all 0.2s;
+        }
+        .vtd-btn-view:hover { background: #10b981; color: #052e16; }
+        .vtd-btn-icon {
+            width: 32px; height: 32px; border-radius: 8px;
+            background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.75); display: inline-flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.2s; text-decoration: none; font-size: 0.82rem;
+        }
+        .vtd-btn-icon:hover { background: rgba(255, 255, 255, 0.14); color: #fff; }
+        .vtd-btn-icon.danger:hover { background: rgba(239, 68, 68, 0.2); color: #ef4444; border-color: rgba(239, 68, 68, 0.4); }
+        .vtd-empty {
+            grid-column: 1 / -1; text-align: center; padding: 64px 20px;
+            background: rgba(255, 255, 255, 0.02); border: 1px dashed rgba(255, 255, 255, 0.1);
+            border-radius: 18px; color: rgba(255, 255, 255, 0.45);
+        }
+        .vtd-modal-backdrop {
+            position: fixed; inset: 0; background: rgba(0, 0, 0, 0.82); backdrop-filter: blur(6px);
+            z-index: 2000; display: none; align-items: center; justify-content: center; padding: 16px;
+        }
+        .vtd-modal-backdrop.open { display: flex; }
+        .vtd-modal {
+            width: 100%; max-width: 620px; background: #111827;
+            border: 1px solid rgba(255, 255, 255, 0.14); border-radius: 20px;
+            overflow: hidden; box-shadow: 0 24px 60px rgba(0, 0, 0, 0.65);
+        }
+        .vtd-modal-head {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 16px 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .vtd-modal-title { font-size: 1rem; font-weight: 800; color: #fff; margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .vtd-modal-close {
+            background: rgba(255, 255, 255, 0.08); border: none; color: #fff;
+            width: 32px; height: 32px; border-radius: 50%; cursor: pointer;
+        }
+        .vtd-modal-body { padding: 20px; max-height: 80vh; overflow-y: auto; }
+        .vtd-preview-box {
+            width: 100%; min-height: 240px; max-height: 400px; background: #000;
+            border-radius: 12px; overflow: hidden; display: flex; align-items: center; justify-content: center;
+            margin-bottom: 16px;
+        }
+        .vtd-preview-box img, .vtd-preview-box video { max-width: 100%; max-height: 380px; object-fit: contain; }
+        .vtd-preview-box iframe { width: 100%; height: 340px; border: 0; }
+        .vtd-share-box {
+            background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px; padding: 12px; margin-top: 14px;
+        }
+        .vtd-share-row { display: flex; gap: 8px; margin-top: 6px; }
+        .vtd-share-row input {
+            flex: 1; background: rgba(0, 0, 0, 0.35); border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px; padding: 8px 12px; color: #cbd5e1; font-size: 0.82rem;
+        }
+        .vtd-form-group { margin-bottom: 14px; }
+        .vtd-form-group label { display: block; font-size: 0.8rem; font-weight: 700; color: rgba(255, 255, 255, 0.7); margin-bottom: 6px; }
+        .vtd-form-group input, .vtd-form-group select {
+            width: 100%; padding: 10px 12px; border-radius: 10px;
+            background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #fff; font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body class="vteen-universe">
+    <div id="vteen-navbar"></div>
+
+    <main class="vtd-wrap">
+        <section class="vtd-header">
+            <div class="vtd-brand">
+                <div class="vtd-brand-icon"><i class="fa-brands fa-google-drive"></i></div>
+                <div>
+                    <h1 class="vtd-brand-title">VTEEN DRIVE</h1>
+                    <div class="vtd-brand-sub">Cosmic Storage System</div>
+                </div>
+            </div>
+            <div class="vtd-quota">
+                <div class="vtd-quota-top">
+                    <span class="vtd-quota-label"><i class="fa-solid fa-cloud"></i> BỘ NHỚ TRỰC TUYẾN</span>
+                    <span class="vtd-quota-val" id="quotaText">Đang tính...</span>
+                </div>
+                <div class="vtd-quota-bar">
+                    <div class="vtd-quota-fill" id="quotaFill" style="width: 8%;"></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="vtd-controls">
+            <div class="vtd-tabs" id="accountTabs">
+                <button class="vtd-tab active" data-account="all"><i class="fa-solid fa-layer-group"></i> Tất cả</button>
+                <button class="vtd-tab" data-account="drive1"><i class="fa-brands fa-google-drive"></i> Google Drive (drive1)</button>
+                <button class="vtd-tab" data-account="git"><i class="fa-brands fa-github"></i> Kho Git</button>
+            </div>
+            <div class="vtd-right-tools">
+                <div class="vtd-search">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="driveSearch" placeholder="Tìm kiếm tệp trong vũ trụ...">
+                </div>
+                <button class="vtd-upload-btn" id="openUploadBtn">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> Tải tệp lên
+                </button>
+            </div>
+        </section>
+
+        <section class="vtd-grid" id="driveGrid">
+            <div class="vtd-empty"><i class="fa-solid fa-spinner fa-spin fa-2x"></i><p style="margin-top:12px;">Đang đồng bộ kho lưu trữ...</p></div>
+        </section>
+    </main>
+
+    <!-- Modal Xem Trước & Chia Sẻ -->
+    <div class="vtd-modal-backdrop" id="previewModal">
+        <div class="vtd-modal">
+            <div class="vtd-modal-head">
+                <h3 class="vtd-modal-title" id="previewTitle">Xem trước tệp</h3>
+                <button class="vtd-modal-close" id="closePreviewBtn"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="vtd-modal-body">
+                <div class="vtd-preview-box" id="previewStage"></div>
+                <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                    <a id="previewDownloadBtn" href="#" download class="vtd-upload-btn" style="flex:1; justify-content:center; text-decoration:none;">
+                        <i class="fa-solid fa-download"></i> TẢI XUỐNG NGAY
+                    </a>
+                    <a id="previewDirectBtn" href="#" target="_blank" rel="noopener" class="vtd-tab" style="justify-content:center; text-decoration:none;">
+                        <i class="fa-solid fa-up-right-from-square"></i> Mở tab mới
+                    </a>
+                </div>
+                <div class="vtd-share-box">
+                    <div style="font-size:0.75rem; font-weight:700; color:#94a3b8;">
+                        <i class="fa-solid fa-shield-halved" style="color:#10b981;"></i> Liên kết chia sẻ bảo mật (Shortlink)
+                    </div>
+                    <div class="vtd-share-row">
+                        <input type="text" id="previewShareInput" readonly>
+                        <button class="vtd-upload-btn" id="copyShareBtn" style="padding:8px 14px;">
+                            <i class="fa-solid fa-copy"></i> Copy
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Tải Lên / Thêm Google Drive -->
+    <div class="vtd-modal-backdrop" id="uploadModal">
+        <div class="vtd-modal">
+            <div class="vtd-modal-head">
+                <h3 class="vtd-modal-title"><i class="fa-solid fa-cloud-arrow-up" style="color:#10b981;"></i> Tải tệp lên VTEEN DRIVE</h3>
+                <button class="vtd-modal-close" id="closeUploadBtn"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="vtd-modal-body">
+                <form id="driveUploadForm">
+                    <div class="vtd-form-group">
+                        <label>Chọn tệp từ thiết bị (Tự động đẩy lên Git Repo nếu có GitHub Token)</label>
+                        <input type="file" id="uploadFileInput" accept="image/*,video/*,.pdf,.zip,.rar,.txt,.mp3">
+                    </div>
+                    <div style="text-align:center; color:rgba(255,255,255,0.35); font-size:0.78rem; margin:10px 0;">— HOẶC NHẬP LINK GOOGLE DRIVE / URL —</div>
+                    <div class="vtd-form-group">
+                        <label>Google Drive Link / File ID hoặc URL trực tiếp</label>
+                        <input type="text" id="uploadDriveUrl" placeholder="https://drive.google.com/file/d/... hoặc uploads/...">
+                    </div>
+                    <div class="vtd-form-group">
+                        <label>Tên hiển thị tệp</label>
+                        <input type="text" id="uploadFileName" placeholder="Để trống sẽ tự lấy theo tên file">
+                    </div>
+                    <div class="vtd-form-group">
+                        <label>Nhánh lưu trữ</label>
+                        <select id="uploadAccountKey">
+                            <option value="drive1">Google Drive (drive1)</option>
+                            <option value="git">Kho Git (git)</option>
+                        </select>
+                    </div>
+                    <div id="uploadStatus" style="font-size:0.83rem; color:#10b981; margin-bottom:12px; display:none;"></div>
+                    <button type="submit" class="vtd-upload-btn" style="width:100%; justify-content:center; padding:12px;">
+                        <i class="fa-solid fa-paper-plane"></i> LƯU VÀO VTEEN DRIVE
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="../assets/js/vteen-core.js"></script>
+    <script src="../assets/js/universe-stream.js"></script>
+    <script>
+    (function () {
+        let allFiles = [];
+        let activeAccount = 'all';
+        let searchQuery = '';
+
+        function formatBytes(bytes) {
+            const b = Number(bytes) || 0;
+            if (b <= 0) return 'N/A';
+            if (b < 1024) return b + ' B';
+            if (b < 1024 * 1024) return (b / 1024).toFixed(1) + ' KB';
+            if (b < 1024 * 1024 * 1024) return (b / (1024 * 1024)).toFixed(2) + ' MB';
+            return (b / (1024 * 1024 * 1024)).toFixed(2) + ' GB';
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '';
+            const d = new Date(String(dateStr).replace(' ', 'T'));
+            if (isNaN(d.getTime())) return String(dateStr).slice(0, 10);
+            return d.toLocaleDateString('vi-VN');
+        }
+
+        function detectType(item) {
+            const mime = String(item.mime_type || '').toLowerCase();
+            const path = String(item.file_path || item.file_name || '').toLowerCase();
+            if (mime.startsWith('video/') || /\.(mp4|webm|mov|m4v|mkv)$/i.test(path)) return 'video';
+            if (mime.startsWith('image/') || /\.(jpg|jpeg|png|gif|webp|bmp|svg|avif)$/i.test(path)) return 'image';
+            return 'file';
+        }
+
+        function getPreviewThumb(item) {
+            if (item.file_path) {
+                return VTeen.url(item.file_path);
+            }
+            if (item.drive_id) {
+                return 'https://drive.google.com/thumbnail?id=' + encodeURIComponent(item.drive_id) + '&sz=w600';
+            }
+            return '';
+        }
+
+        function getDownloadUrl(item) {
+            if (item.file_path) {
+                return VTeen.url(item.file_path);
+            }
+            if (item.drive_id) {
+                return 'https://drive.google.com/uc?export=download&id=' + encodeURIComponent(item.drive_id);
+            }
+            return '#';
+        }
+
+        function getShareUrl(item) {
+            const base = window.location.href.replace(/\/driver\/.*$/, '/');
+            return base + 'p.html?code=' + encodeURIComponent(item.short_code || '');
+        }
+
+        function updateQuota() {
+            const totalBytes = allFiles.reduce((sum, f) => sum + (Number(f.file_size) || 0), 0);
+            const quotaMax = 15 * 1024 * 1024 * 1024;
+            const pct = Math.min(100, Math.max(2, (totalBytes / quotaMax) * 100));
+            document.getElementById('quotaText').textContent = formatBytes(totalBytes) + ' / 15 GB (' + allFiles.length + ' tệp)';
+            document.getElementById('quotaFill').style.width = pct.toFixed(1) + '%';
+        }
+
+        function renderGrid() {
+            const grid = document.getElementById('driveGrid');
+            const q = searchQuery.trim().toLowerCase();
+            const isAdmin = VTeen.auth.isAdmin();
+
+            const filtered = allFiles.filter(item => {
+                const acc = item.account_key || (item.drive_id ? 'drive1' : 'git');
+                if (activeAccount !== 'all' && acc !== activeAccount) return false;
+                if (q) {
+                    const hay = ((item.file_name || '') + ' ' + (item.short_code || '') + ' ' + (item.drive_id || '')).toLowerCase();
+                    if (!hay.includes(q)) return false;
+                }
+                return true;
+            });
+
+            if (!filtered.length) {
+                grid.innerHTML = '<div class="vtd-empty"><i class="fa-regular fa-folder-open fa-2x"></i><p style="margin-top:10px;">Không tìm thấy tệp nào phù hợp.</p></div>';
+                return;
+            }
+
+            grid.innerHTML = filtered.map(item => {
+                const ftype = detectType(item);
+                const thumb = getPreviewThumb(item);
+                const acc = item.account_key || (item.drive_id ? 'drive1' : 'git');
+                const dlUrl = getDownloadUrl(item);
+                const code = VTeen.escapeHtml(item.short_code || '');
+                const name = VTeen.escapeHtml(item.file_name || item.short_code || 'Untitled');
+                const sizeText = formatBytes(item.file_size);
+                const dateText = formatDate(item.created_at);
+
+                let previewMedia = '<i class="fa-solid fa-file-shield vtd-preview-icon"></i>';
+                if (ftype === 'image' && thumb) {
+                    previewMedia = `<img src="${VTeen.escapeHtml(thumb)}" alt="${name}" loading="lazy" onerror="this.style.display='none'">`;
+                } else if (ftype === 'video') {
+                    previewMedia = thumb
+                        ? `<img src="${VTeen.escapeHtml(thumb)}" alt="${name}" loading="lazy" onerror="this.style.display='none'">`
+                        : '<i class="fa-solid fa-film vtd-preview-icon"></i>';
+                }
+
+                return `
+                <article class="vtd-card" data-code="${code}">
+                    <div class="vtd-preview" data-action="preview" data-code="${code}">
+                        ${previewMedia}
+                        <span class="vtd-type-tag">${ftype.toUpperCase()}</span>
+                        <span class="vtd-badge">${VTeen.escapeHtml(acc)}</span>
+                    </div>
+                    <div class="vtd-body">
+                        <div class="vtd-title" title="${name}">${name}</div>
+                        <div class="vtd-meta">
+                            <span>${sizeText}</span>
+                            <span>${dateText}</span>
+                        </div>
+                        <div class="vtd-actions">
+                            <button type="button" class="vtd-btn-view" data-action="preview" data-code="${code}">XEM NGAY</button>
+                            <a href="${VTeen.escapeHtml(dlUrl)}" download="${name}" target="_blank" rel="noopener" class="vtd-btn-icon" title="Tải xuống">
+                                <i class="fa-solid fa-download"></i>
+                            </a>
+                            <button type="button" class="vtd-btn-icon" data-action="copy" data-code="${code}" title="Copy link chia sẻ">
+                                <i class="fa-solid fa-link"></i>
+                            </button>
+                            ${isAdmin ? `<button type="button" class="vtd-btn-icon danger" data-action="delete" data-code="${code}" title="Xóa tệp"><i class="fa-solid fa-trash"></i></button>` : ''}
+                        </div>
+                    </div>
+                </article>`;
+            }).join('');
+        }
+
+        function openPreview(code) {
+            const item = allFiles.find(f => String(f.short_code) === String(code));
+            if (!item) return;
+
+            const modal = document.getElementById('previewModal');
+            const stage = document.getElementById('previewStage');
+            const titleEl = document.getElementById('previewTitle');
+            const dlBtn = document.getElementById('previewDownloadBtn');
+            const directBtn = document.getElementById('previewDirectBtn');
+            const shareInput = document.getElementById('previewShareInput');
+
+            const ftype = detectType(item);
+            const localUrl = item.file_path ? VTeen.url(item.file_path) : '';
+            const dlUrl = getDownloadUrl(item);
+            const shareUrl = getShareUrl(item);
+
+            titleEl.textContent = item.file_name || item.short_code;
+            dlBtn.href = dlUrl;
+            dlBtn.setAttribute('download', item.file_name || item.short_code);
+            directBtn.href = localUrl || (item.drive_id ? `https://drive.google.com/file/d/${encodeURIComponent(item.drive_id)}/view` : shareUrl);
+            shareInput.value = shareUrl;
+
+            if (ftype === 'video' && localUrl) {
+                stage.innerHTML = `<video src="${VTeen.escapeHtml(localUrl)}" controls autoplay playsinline></video>`;
+            } else if (ftype === 'image' && localUrl) {
+                stage.innerHTML = `<img src="${VTeen.escapeHtml(localUrl)}" alt="${VTeen.escapeHtml(item.file_name || '')}">`;
+            } else if (item.drive_id) {
+                stage.innerHTML = `<iframe src="https://drive.google.com/file/d/${encodeURIComponent(item.drive_id)}/preview" allow="autoplay; fullscreen"></iframe>`;
+            } else {
+                stage.innerHTML = `<div style="padding:40px; text-align:center; color:#94a3b8;"><i class="fa-solid fa-file-circle-check fa-3x" style="color:#10b981;"></i><p style="margin-top:12px;">Tệp sẵn sàng tải xuống</p></div>`;
+            }
+
+            modal.classList.add('open');
+        }
+
+        function closePreview() {
+            const modal = document.getElementById('previewModal');
+            const stage = document.getElementById('previewStage');
+            stage.innerHTML = '';
+            modal.classList.remove('open');
+        }
+
+        function extractDriveId(input) {
+            const s = String(input || '').trim();
+            if (!s) return '';
+            const m1 = s.match(/\/file\/d\/([a-zA-Z0-9_-]{15,})/);
+            if (m1) return m1[1];
+            const m2 = s.match(/[?&]id=([a-zA-Z0-9_-]{15,})/);
+            if (m2) return m2[1];
+            if (/^[a-zA-Z0-9_-]{20,}$/.test(s)) return s;
+            return '';
+        }
+
+        async function handleUpload(e) {
+            e.preventDefault();
+            const fileInput = document.getElementById('uploadFileInput');
+            const driveUrlInput = document.getElementById('uploadDriveUrl');
+            const nameInput = document.getElementById('uploadFileName');
+            const accSelect = document.getElementById('uploadAccountKey');
+            const statusEl = document.getElementById('uploadStatus');
+
+            const file = fileInput.files && fileInput.files[0];
+            const rawUrl = driveUrlInput.value.trim();
+            if (!file && !rawUrl) {
+                alert('Vui lòng chọn tệp từ máy hoặc nhập link Google Drive!');
+                return;
+            }
+
+            statusEl.style.display = 'block';
+            statusEl.textContent = 'Đang xử lý lưu trữ...';
+
+            const shortCode = Math.random().toString(36).substring(2, 10) + Math.random().toString(36).substring(2, 6);
+            const nowStr = new Date().toISOString().slice(0, 19).replace('T', ' ');
+            let filePath = '';
+            let driveId = '';
+            let fileName = nameInput.value.trim();
+            let fileSize = 0;
+            let mimeType = 'application/octet-stream';
+            let accountKey = accSelect.value || 'drive1';
+
+            try {
+                if (file) {
+                    fileName = fileName || file.name;
+                    fileSize = file.size;
+                    mimeType = file.type || mimeType;
+                    const ext = (file.name.split('.').pop() || 'bin').toLowerCase();
+                    const repoPath = `uploads/2026/04/vtd_${shortCode}.${ext}`;
+
+                    if (VTeen.github && VTeen.github.isConfigured()) {
+                        statusEl.textContent = 'Đang tải tệp trực tiếp lên GitHub Repository...';
+                        await VTeen.github.uploadFile(repoPath, file, `Upload drive file ${fileName}`);
+                        filePath = repoPath;
+                        accountKey = 'git';
+                    } else {
+                        filePath = await new Promise((resolve, reject) => {
+                            const reader = new FileReader();
+                            reader.onload = () => resolve(String(reader.result));
+                            reader.onerror = reject;
+                            reader.readAsDataURL(file);
+                        });
+                    }
+                } else {
+                    driveId = extractDriveId(rawUrl);
+                    if (!driveId) {
+                        filePath = rawUrl.replace(/^\/+/, '');
+                    }
+                    fileName = fileName || (driveId ? `Drive_${driveId.slice(0, 8)}` : rawUrl.split('/').pop() || 'Tệp mới');
+                    mimeType = /\.(mp4|webm|mov)$/i.test(fileName) ? 'video/mp4' : 'image/jpeg';
+                }
+
+                const newEntry = {
+                    id: Date.now(),
+                    short_code: shortCode,
+                    drive_id: driveId,
+                    account_key: accountKey,
+                    file_name: fileName,
+                    file_path: filePath,
+                    mime_type: mimeType,
+                    file_size: fileSize,
+                    created_at: nowStr
+                };
+
+                allFiles.unshift(newEntry);
+                await VTeen.db.saveDriveFiles(allFiles);
+                updateQuota();
+                renderGrid();
+
+                fileInput.value = '';
+                driveUrlInput.value = '';
+                nameInput.value = '';
+                statusEl.style.display = 'none';
+                document.getElementById('uploadModal').classList.remove('open');
+            } catch (err) {
+                statusEl.textContent = 'Lỗi: ' + (err && err.message ? err.message : 'Không thể lưu tệp');
+            }
+        }
+
+        async function init() {
+            VTeen.initNavbar();
+            allFiles = await VTeen.db.getDriveFiles();
+            updateQuota();
+            renderGrid();
+
+            document.getElementById('accountTabs').addEventListener('click', (e) => {
+                const btn = e.target.closest('.vtd-tab');
+                if (!btn) return;
+                document.querySelectorAll('#accountTabs .vtd-tab').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                activeAccount = btn.getAttribute('data-account') || 'all';
+                renderGrid();
+            });
+
+            document.getElementById('driveSearch').addEventListener('input', (e) => {
+                searchQuery = e.target.value || '';
+                renderGrid();
+            });
+
+            document.getElementById('driveGrid').addEventListener('click', async (e) => {
+                const target = e.target.closest('[data-action]');
+                if (!target) return;
+                const action = target.getAttribute('data-action');
+                const code = target.getAttribute('data-code');
+                if (action === 'preview') {
+                    openPreview(code);
+                } else if (action === 'copy') {
+                    const item = allFiles.find(f => String(f.short_code) === String(code));
+                    if (!item) return;
+                    const url = getShareUrl(item);
+                    navigator.clipboard.writeText(url);
+                    target.innerHTML = '<i class="fa-solid fa-check" style="color:#10b981;"></i>';
+                    setTimeout(() => { target.innerHTML = '<i class="fa-solid fa-link"></i>'; }, 1500);
+                } else if (action === 'delete') {
+                    if (!confirm('Đại ca có chắc muốn xóa tệp này khỏi VTEEN DRIVE?')) return;
+                    allFiles = allFiles.filter(f => String(f.short_code) !== String(code));
+                    await VTeen.db.saveDriveFiles(allFiles);
+                    updateQuota();
+                    renderGrid();
+                }
+            });
+
+            document.getElementById('closePreviewBtn').addEventListener('click', closePreview);
+            document.getElementById('previewModal').addEventListener('click', (e) => {
+                if (e.target.id === 'previewModal') closePreview();
+            });
+
+            document.getElementById('copyShareBtn').addEventListener('click', () => {
+                const input = document.getElementById('previewShareInput');
+                navigator.clipboard.writeText(input.value);
+                const btn = document.getElementById('copyShareBtn');
+                btn.innerHTML = '<i class="fa-solid fa-check"></i> Đã copy';
+                setTimeout(() => { btn.innerHTML = '<i class="fa-solid fa-copy"></i> Copy'; }, 1500);
+            });
+
+            document.getElementById('openUploadBtn').addEventListener('click', () => {
+                document.getElementById('uploadModal').classList.add('open');
+            });
+            document.getElementById('closeUploadBtn').addEventListener('click', () => {
+                document.getElementById('uploadModal').classList.remove('open');
+            });
+            document.getElementById('uploadModal').addEventListener('click', (e) => {
+                if (e.target.id === 'uploadModal') document.getElementById('uploadModal').classList.remove('open');
+            });
+            document.getElementById('driveUploadForm').addEventListener('submit', handleUpload);
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    })();
+    </script>
+</body>
+</html>

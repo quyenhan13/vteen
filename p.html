@@ -81,32 +81,43 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
-    const images = await VTeen.db.getImages();
-    const file = images.find(i => String(i.short_code) === code);
+    const [images, driveFiles] = await Promise.all([
+        VTeen.db.getImages(),
+        VTeen.db.getDriveFiles()
+    ]);
+    const file = images.find(i => String(i.short_code) === code) ||
+                 driveFiles.find(d => String(d.short_code) === code);
 
     if (!file) {
         document.getElementById('pRoot').innerHTML = `
             <div style="text-align:center;margin-top:100px;">
                 <h2 style="color:#ef4444;">Khong tim thay file</h2>
                 <p>Ma chia se khong ton tai hoac da bi xoa.</p>
-                <a href="index.html" class="back-btn-cyber" style="margin-top:20px;display:inline-flex;">Ve trang chu</a>
+                <a href="driver/index.html" class="back-btn-cyber" style="margin-top:20px;display:inline-flex;">Ve kho Driver</a>
             </div>
         `;
         return;
     }
 
-    const name = (file.original_name && !file.original_name.includes('???'))
-        ? file.original_name
+    const rawName = file.original_name || file.name || '';
+    const name = (rawName && !rawName.includes('???'))
+        ? rawName
         : `File ${code.toUpperCase()}`;
-    document.title = `${name} - VTEEN Movies`;
+    document.title = `${name} - VTEEN Drive`;
     document.getElementById('fileTitle').textContent = name;
 
-    const src = VTeen.url(file.file_path);
-    const ext = (String(file.file_path || '').split('.').pop() || '').toLowerCase();
-    const isVideo = ['mp4', 'webm', 'mov'].includes(ext);
+    const src = file.file_path ? VTeen.url(file.file_path) : '';
+    const ext = (String(file.file_path || name).split('.').pop() || '').toLowerCase();
+    const isVideo = ['mp4', 'webm', 'mov'].includes(ext) || String(file.mime_type || '').includes('video');
 
     const mediaBox = document.getElementById('mediaBox');
-    if (isVideo) {
+    if (!src && file.drive_id) {
+        mediaBox.innerHTML = `
+            <div class="player-wrapper" style="aspect-ratio:16/9;">
+                <iframe src="https://drive.google.com/file/d/${encodeURIComponent(file.drive_id)}/preview" style="width:100%;height:100%;border:0;border-radius:16px;" allowfullscreen></iframe>
+            </div>
+        `;
+    } else if (isVideo) {
         const mime = ext === 'webm' ? 'video/webm' : (ext === 'mov' ? 'video/quicktime' : 'video/mp4');
         mediaBox.innerHTML = `
             <div class="player-wrapper">
