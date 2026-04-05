@@ -8,7 +8,7 @@
     const STORAGE_KEYS = {
         SESSION: 'vteen_auth_session_v1',
         GH_CONFIG: 'vteen_github_config_v1',
-        MOVIES_CACHE: 'vteen_movies_override_v2',
+        MOVIES_CACHE: 'vteen_movies_override_v3',
         IMAGES_CACHE: 'vteen_images_override_v1',
         USERS_CACHE: 'vteen_users_override_v1'
     };

@@ -7,9 +7,9 @@
     <title>Xem phim - VTEEN</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="assets/css/vteen-all.css">
-    <link rel="stylesheet" href="assets/css/player-watch.css">
-    <link rel="stylesheet" href="assets/css/universe-stream.css">
+    <link rel="stylesheet" href="assets/css/vteen-all.css?v=20261008">
+    <link rel="stylesheet" href="assets/css/player-watch.css?v=20261008">
+    <link rel="stylesheet" href="assets/css/universe-stream.css?v=20261008">
 </head>
 <body class="universe-stream-page">
 <header class="navbar">
@@ -96,14 +96,15 @@
     </div>
 </footer>
 
-<script src="assets/js/vteen-core.js"></script>
-<script src="assets/js/universe-stream.js"></script>
+<script src="assets/js/vteen-core.js?v=20261008"></script>
+<script src="assets/js/universe-stream.js?v=20261008"></script>
 <script>
 (function () {
     let SERVERS = {};
     let currentSv = 1;
     let activeMeta = { seriesName: '', slug: '', epNum: 1 };
     let fallbackAttempted = false;
+    let loaderTimer = null;
 
     function initParticles() {
         const container = document.getElementById('particles');
@@ -115,6 +116,22 @@
             p.style.animationDuration = (Math.random() * 7 + 6) + 's';
             p.style.animationDelay = (Math.random() * 5) + 's';
             container.appendChild(p);
+        }
+    }
+
+    function showPlayer() {
+        const player = document.getElementById('main-player');
+        const loader = document.getElementById('player-loader');
+        if (loaderTimer) {
+            clearTimeout(loaderTimer);
+            loaderTimer = null;
+        }
+        if (loader) {
+            loader.style.display = 'none';
+            loader.classList.add('hidden');
+        }
+        if (player) {
+            player.style.opacity = '1';
         }
     }
 
@@ -135,16 +152,16 @@
             localStorage.setItem('vteen_preferred_sv', String(sv));
         }
 
-        loader.style.display = 'block';
+        if (loaderTimer) clearTimeout(loaderTimer);
+        loader.classList.remove('hidden');
+        loader.style.display = 'grid';
         player.style.opacity = '0';
 
         const url = SERVERS[sv];
         if (url) {
+            player.onload = showPlayer;
             player.src = url;
-            player.onload = () => {
-                loader.style.display = 'none';
-                player.style.opacity = '1';
-            };
+            loaderTimer = setTimeout(showPlayer, 800);
         } else {
             loader.textContent = '⚠️ Chưa có link phim trên server này.';
         }
@@ -163,7 +180,6 @@
             .replace(/-(19|20)\d\d-\d+-tap$/, '')
             .replace(/-\d+-tap$/, '');
 
-        // Try KKPhim API first (direct M3U8)
         try {
             let kkSlug = cleanSlug;
             const searchRes = await fetch(`https://phimapi.com/v1/api/tim-kiem?keyword=${encodeURIComponent(cleanKw)}&limit=5`);
@@ -187,7 +203,6 @@
             }
         } catch (e) {}
 
-        // Try NguonC API next
         try {
             const ncRes = await fetch(`https://phim.nguonc.com/api/film/${encodeURIComponent(cleanSlug)}`);
             if (ncRes.ok) {
@@ -207,7 +222,12 @@
     }
 
     window.addEventListener('message', async (e) => {
-        if (!e.data || e.data.type !== 'VTEEN_PLAYER_ERROR') return;
+        if (!e.data) return;
+        if (e.data.type === 'VTEEN_PLAYER_READY') {
+            showPlayer();
+            return;
+        }
+        if (e.data.type !== 'VTEEN_PLAYER_ERROR') return;
         if (currentSv === 1 && SERVERS[2]) {
             switchServer(2, false);
             return;
@@ -216,7 +236,7 @@
             fallbackAttempted = true;
             const liveUrl = await fetchLiveFallbackLink(activeMeta.seriesName, activeMeta.slug, activeMeta.epNum);
             if (liveUrl) {
-                SERVERS[2] = `embed.html?url=${encodeURIComponent(liveUrl)}`;
+                SERVERS[2] = `embed.html?v=20261008&url=${encodeURIComponent(liveUrl)}`;
                 switchServer(2, false);
             }
         }
@@ -254,13 +274,21 @@
             currentMovie.description || `Phim ${seriesName} đang được cập nhật thông tin chi tiết. Chúc bạn xem phim vui vẻ!`;
 
         SERVERS = {};
-        const link1 = VTeen.normalizeMovieUrl(currentMovie.embed_link);
-        const link2 = VTeen.normalizeMovieUrl(currentMovie.embed_link_2);
+        let link1 = VTeen.normalizeMovieUrl(currentMovie.embed_link);
+        let link2 = VTeen.normalizeMovieUrl(currentMovie.embed_link_2);
+
+        // Prioritize direct .m3u8 stream on SERVER VIP (SV1) over third-party ad-supported iframes
+        if (link2 && link2.toLowerCase().includes('.m3u8') && !link2.includes('opstream') && (!link1 || !link1.toLowerCase().includes('.m3u8') || link1.includes('opstream'))) {
+            const tmp = link1;
+            link1 = link2;
+            link2 = tmp;
+        }
+
         if (link1) {
-            SERVERS[1] = `embed.html?url=${encodeURIComponent(link1)}`;
+            SERVERS[1] = `embed.html?v=20261008&url=${encodeURIComponent(link1)}`;
         }
         if (link2) {
-            SERVERS[2] = `embed.html?url=${encodeURIComponent(link2)}`;
+            SERVERS[2] = `embed.html?v=20261008&url=${encodeURIComponent(link2)}`;
         }
 
         const serverList = document.getElementById('serverList');
@@ -280,10 +308,7 @@
             return `<a href="xem.html?slug=${encodeURIComponent(slug)}&ep=${num}" class="ep-item ${active}">${num}</a>`;
         }).join('');
 
-        const pref = localStorage.getItem('vteen_preferred_sv');
-        if (pref && SERVERS[pref]) {
-            switchServer(parseInt(pref, 10));
-        } else if (SERVERS[1]) {
+        if (SERVERS[1]) {
             switchServer(1);
         } else if (SERVERS[2]) {
             switchServer(2);

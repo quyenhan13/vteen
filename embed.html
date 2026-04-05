@@ -122,8 +122,18 @@
         } catch (e) {}
     }
 
+    function notifyParentReady() {
+        try {
+            if (window.parent && window.parent !== window) {
+                window.parent.postMessage({ type: 'VTEEN_PLAYER_READY', url: link }, '*');
+            }
+        } catch (e) {}
+    }
+
+    notifyParentReady();
+
     if (isDirectVideo) {
-        root.innerHTML = `<video id="v" playsinline controls crossorigin="anonymous"></video>`;
+        root.innerHTML = `<video id="v" playsinline controls></video>`;
         const video = document.getElementById('v');
         const defaultOptions = {
             autoplay: true,
@@ -228,10 +238,6 @@
             } catch (err) {}
         });
     } else {
-        if (window.self !== window.top) {
-            window.location.replace(link);
-            return;
-        }
         root.innerHTML = `
             <iframe
                 class="full-iframe"
