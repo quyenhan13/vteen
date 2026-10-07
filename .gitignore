@@ -1,0 +1,9 @@
+# Logs & temp files
+*.log
+error_log
+cookie.txt
+nul_
+scratch/
+nhvte1ln/
+.DS_Store
+Thumbs.db

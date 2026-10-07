@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#050508">
+    <title>Chi tiết Bộ phim - VTEEN Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../assets/css/vteen-all.css">
+    <link rel="stylesheet" href="../assets/css/admin.css">
+    <link rel="stylesheet" href="../assets/css/universe-stream.css">
+    <style>
+        #vteen-iron-root {
+            background: #05070a !important;
+            color: #fff !important;
+            font-family: 'Plus Jakarta Sans', sans-serif !important;
+            min-height: 100vh;
+            padding: 20px 0 100px;
+        }
+        .v-wrap { max-width: 1400px; margin: 0 auto; padding: 0 15px; }
+        .v-control-box {
+            background: #0d111a !important;
+            border: 1px solid rgba(0, 242, 255, 0.2) !important;
+            border-radius: 20px !important;
+            padding: 25px !important;
+            margin-bottom: 30px !important;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.6) !important;
+        }
+        .v-control-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 20px; }
+        .v-series-info { display: flex; align-items: center; gap: 20px; }
+        .v-poster-img { width: 60px; height: 85px; border-radius: 10px; object-fit: cover; border: 1px solid rgba(255,255,255,0.1); }
+        .v-button-group { display: flex; flex-wrap: wrap; gap: 12px; }
+        .v-btn {
+            border: none !important;
+            border-radius: 10px !important;
+            padding: 12px 20px !important;
+            font-size: 13px !important;
+            font-weight: 800 !important;
+            cursor: pointer !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 8px !important;
+            transition: 0.2s !important;
+            text-transform: uppercase !important;
+            text-decoration: none !important;
+        }
+        .v-btn-neon { background: linear-gradient(135deg, #00f2ff, #0072ff) !important; color: #000 !important; box-shadow: 0 5px 15px rgba(0, 242, 255, 0.3) !important; }
+        .v-btn-neon:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0, 242, 255, 0.5) !important; }
+        .v-btn-dark { background: rgba(255, 255, 255, 0.05) !important; color: #fff !important; border: 1px solid rgba(255, 255, 255, 0.1) !important; }
+        .v-btn-dark:hover { background: rgba(255, 255, 255, 0.1) !important; border-color: #00f2ff !important; color: #00f2ff !important; }
+        .v-search-bar { width: 100%; max-width: 400px; position: relative; }
+        .v-search-bar input {
+            width: 100% !important;
+            background: rgba(0,0,0,0.5) !important;
+            border: 1px solid rgba(0, 242, 255, 0.2) !important;
+            border-radius: 12px !important;
+            padding: 12px 15px 12px 45px !important;
+            color: #fff !important;
+            font-size: 14px !important;
+            outline: none !important;
+        }
+        .v-search-bar i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #00f2ff; opacity: 0.6; }
+        .v-table-card { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 20px; overflow: hidden; }
+        .v-table-scroll { overflow-x: auto; }
+        .v-table { width: 100%; border-collapse: collapse; table-layout: fixed; min-width: 1000px; }
+        .v-table th { background: #0a0e14; padding: 18px 15px; text-align: left; font-size: 11px; text-transform: uppercase; color: rgba(255,255,255,0.4); border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .v-table td { padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); vertical-align: middle; }
+        .v-input-field {
+            width: 100% !important;
+            background: rgba(0,0,0,0.4) !important;
+            border: 1px solid rgba(255,255,255,0.1) !important;
+            border-radius: 8px !important;
+            padding: 10px 12px !important;
+            color: #fff !important;
+            font-size: 14px !important;
+            outline: none !important;
+        }
+        .v-input-field:focus { border-color: #00f2ff !important; }
+        .v-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); backdrop-filter: blur(15px); display: none; align-items: center; justify-content: center; z-index: 20000; padding: 20px; }
+        .v-modal.show { display: flex !important; }
+        .v-modal-box { background: #0d111a; border: 1px solid rgba(0, 242, 255, 0.2); border-radius: 25px; width: 100%; max-width: 900px; max-height: 90vh; overflow-y: auto; box-shadow: 0 40px 100px rgba(0,0,0,0.8); }
+        .v-modal-head { padding: 25px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center; }
+        .v-modal-body { padding: 30px; }
+        #v-toast { position: fixed; bottom: 30px; right: 30px; background: #00f2ff; color: #000; padding: 15px 30px; border-radius: 12px; font-weight: 800; z-index: 30000; display: none; box-shadow: 0 10px 30px rgba(0,242,255,0.4); }
+    </style>
+</head>
+<body class="universe-stream-page">
+<header class="navbar">
+    <div class="nav-wrap">
+        <a href="../index.html" class="logo">
+            <div class="logo-main">VTEEN UNIVERSE</div>
+            <div class="logo-sub">KHO PHIM TRUC TUYEN</div>
+        </a>
+        <nav class="menu" id="mainMenu"></nav>
+        <button class="mobile-menu-toggle" type="button" aria-label="Mo menu" aria-expanded="false" aria-controls="mainMenu">
+            <i class="fa fa-bars"></i>
+        </button>
+    </div>
+</header>
+
+<div id="vteen-iron-root">
+    <div class="v-wrap">
+        <div class="v-control-box">
+            <div class="v-control-header">
+                <div class="v-series-info">
+                    <img id="seriesPosterImg" src="" class="v-poster-img">
+                    <div>
+                        <h1 id="seriesTitleHeading" style="margin:0; font-size:22px; font-weight:900; color:#fff;">Đang tải...</h1>
+                        <span id="seriesEpBadge" style="color:#00f2ff; font-weight:800; font-size:12px;">0 TẬP PHIM</span>
+                    </div>
+                </div>
+                <div class="v-button-group">
+                    <a href="suaphim.html" class="v-btn v-btn-dark"><i class="fa-solid fa-arrow-left"></i> DANH SÁCH</a>
+                    <button type="button" class="v-btn v-btn-dark" onclick="openModal('modalInfo')"><i class="fa-solid fa-image"></i> THÔNG TIN</button>
+                    <button type="button" class="v-btn v-btn-dark" onclick="openModal('modalBulk')"><i class="fa-solid fa-layer-group"></i> THÊM LOẠT</button>
+                    <button type="button" class="v-btn v-btn-dark" onclick="openModal('modalTools')"><i class="fa-solid fa-wrench"></i> CÔNG CỤ</button>
+                    <button type="button" class="v-btn v-btn-neon" id="saveAllBtn"><i class="fa-solid fa-floppy-disk"></i> LƯU TẤT CẢ</button>
+                </div>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:15px;">
+                <div class="v-search-bar">
+                    <i class="fa-solid fa-search"></i>
+                    <input type="text" id="tableSearch" placeholder="Tìm tên tập, link hoặc số tập...">
+                </div>
+                <div style="display:flex; align-items:center; gap:10px; background:rgba(255,255,255,0.05); padding:10px 15px; border-radius:12px;">
+                    <span style="font-size:12px; opacity:0.5; font-weight:800;">NHẢY ĐẾN TẬP:</span>
+                    <input type="number" id="jumpInput" style="width:50px; background:none; border:none; border-bottom:1px solid #00f2ff; color:#00f2ff; text-align:center; font-weight:800; outline:none;">
+                </div>
+            </div>
+        </div>
+
+        <form id="mainForm">
+            <div class="v-table-card">
+                <div class="v-table-scroll">
+                    <table class="v-table" id="movieTable">
+                        <thead>
+                            <tr>
+                                <th style="width:80px; text-align:center;">TẬP</th>
+                                <th style="width:250px;">TIÊU ĐỀ TẬP PHIM</th>
+                                <th>LINK SERVER 1</th>
+                                <th>LINK SERVER 2</th>
+                                <th style="width:70px; text-align:center;">XÓA</th>
+                            </tr>
+                        </thead>
+                        <tbody id="episodeTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- MODAL: INFO -->
+<div class="v-modal" id="modalInfo">
+    <div class="v-modal-box" style="max-width:650px;">
+        <div class="v-modal-head"><b style="color:#00f2ff; font-size:18px;">CẬP NHẬT THÔNG TIN PHIM</b><span onclick="closeModal('modalInfo')" style="color:#fff; font-size:36px; cursor:pointer; line-height:0.5; padding:0 10px;">&times;</span></div>
+        <div class="v-modal-body">
+            <form id="infoForm">
+                <div style="display:flex; gap:25px; margin-bottom:25px;">
+                    <div style="width:160px; flex-shrink:0;">
+                        <img id="img-pre" src="" style="width:100%; border-radius:15px; border:1px solid rgba(255,255,255,0.1); margin-bottom:15px; box-shadow:0 10px 30px rgba(0,0,0,0.5);">
+                        <div style="position:relative; overflow:hidden; background:rgba(255,255,255,0.05); border:1px dashed rgba(255,255,255,0.2); border-radius:10px; padding:10px; text-align:center; font-size:11px;">
+                            CHỌN FILE ẢNH
+                            <input type="file" id="posterFileInput" accept="image/*" style="position:absolute; top:0; left:0; opacity:0; width:100%; height:100%; cursor:pointer;">
+                        </div>
+                    </div>
+                    <div style="flex-grow:1;">
+                        <div style="margin-bottom:15px;"><label style="font-size:11px; opacity:0.5; font-weight:800; display:block; margin-bottom:5px;">DÁN URL ẢNH</label><input type="text" id="seriesPosterInput" class="v-input-field"></div>
+                        <div><label style="font-size:11px; opacity:0.5; font-weight:800; display:block; margin-bottom:5px;">MÔ TẢ PHIM</label><textarea id="seriesDescInput" class="v-input-field" rows="6"></textarea></div>
+                    </div>
+                </div>
+                <button type="submit" class="v-btn v-btn-neon" style="width:100%; padding:18px; justify-content:center;">LƯU THÔNG TIN MỚI</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: BULK ADD -->
+<div class="v-modal" id="modalBulk">
+    <div class="v-modal-box">
+        <div class="v-modal-head"><b style="color:#00f2ff; font-size:18px;">THÊM TẬP HÀNG LOẠT</b><span onclick="closeModal('modalBulk')" style="color:#fff; font-size:36px; cursor:pointer; line-height:0.5; padding:0 10px;">&times;</span></div>
+        <div class="v-modal-body">
+            <form id="bulkAddForm">
+                <div style="margin-bottom:20px; display:flex; align-items:center; gap:20px; background:rgba(255,255,255,0.03); padding:15px; border-radius:15px;">
+                    <span style="font-weight:800;">TẬP BẮT ĐẦU:</span><input type="number" id="addFromEp" value="1" class="v-input-field" style="width:80px !important;">
+                    <span style="font-size:12px; opacity:0.5;">Mỗi dòng 1 link tương ứng 1 tập.</span>
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:25px;">
+                    <div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                            <label style="font-size:11px; color:#00f2ff; font-weight:800; margin:0;">LINK SERVER 1</label>
+                            <button type="button" onclick="reverseTextarea('addLinks1')" style="background:rgba(0,242,255,0.1); border:1px solid rgba(0,242,255,0.3); color:#00f2ff; font-size:10px; padding:2px 8px; border-radius:4px; cursor:pointer; font-weight:800;">ĐẢO THỨ TỰ</button>
+                        </div>
+                        <textarea id="addLinks1" class="v-input-field" style="height:300px; font-family:monospace;"></textarea>
+                    </div>
+                    <div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                            <label style="font-size:11px; color:#00f2ff; font-weight:800; margin:0;">LINK SERVER 2</label>
+                            <button type="button" onclick="reverseTextarea('addLinks2')" style="background:rgba(0,242,255,0.1); border:1px solid rgba(0,242,255,0.3); color:#00f2ff; font-size:10px; padding:2px 8px; border-radius:4px; cursor:pointer; font-weight:800;">ĐẢO THỨ TỰ</button>
+                        </div>
+                        <textarea id="addLinks2" class="v-input-field" style="height:300px; font-family:monospace;"></textarea>
+                    </div>
+                </div>
+                <button type="submit" class="v-btn v-btn-neon" style="width:100%; padding:20px; font-size:16px; justify-content:center;">XỬ LÝ VÀ THÊM TẬP</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: TOOLS -->
+<div class="v-modal" id="modalTools">
+    <div class="v-modal-box" style="max-width:650px;">
+        <div class="v-modal-head">
+            <b style="color:#00f2ff; font-size:18px;">CÔNG CỤ NÂNG CAO</b>
+            <span onclick="closeModal('modalTools')" style="color:#fff; font-size:36px; cursor:pointer; line-height:0.5; padding:0 10px;">&times;</span>
+        </div>
+        <div class="v-modal-body">
+            <div style="background:rgba(255,255,255,0.03); padding:25px; border-radius:15px; margin-bottom:25px; border: 1px solid rgba(0, 242, 255, 0.15);">
+                <h4 style="margin:0 0 20px; font-size:14px; color:#00f2ff; text-transform:uppercase; text-align:center;">Cập nhật Link theo Server</h4>
+                <form id="bulkReplaceForm">
+                    <div style="display:flex; flex-direction:column; gap:18px; margin-bottom:25px;">
+                        <div style="display:flex; gap:15px;">
+                            <div style="flex:1;">
+                                <label style="display:block; font-size:12px; font-weight:800; color:rgba(255,255,255,0.6); margin-bottom:8px;">BẮT ĐẦU TỪ TẬP:</label>
+                                <input type="number" id="replaceStartEp" class="v-input-field" value="1" required>
+                            </div>
+                            <div style="flex:1;">
+                                <label style="display:block; font-size:12px; font-weight:800; color:rgba(255,255,255,0.6); margin-bottom:8px;">ÁP DỤNG CHO:</label>
+                                <select id="replaceTargetServer" class="v-input-field">
+                                    <option value="1">Chỉ Server 1</option>
+                                    <option value="2">Chỉ Server 2</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div>
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                                <label style="font-size:12px; font-weight:800; color:rgba(255,255,255,0.6);">DANH SÁCH LINK MỚI:</label>
+                                <button type="button" onclick="reverseTextarea('replaceNewLinks')" style="background:rgba(0,242,255,0.1); border:1px solid rgba(0,242,255,0.3); color:#00f2ff; font-size:10px; padding:4px 10px; border-radius:4px; cursor:pointer; font-weight:800;">ĐẢO THỨ TỰ DÒNG</button>
+                            </div>
+                            <textarea id="replaceNewLinks" class="v-input-field" placeholder="Dán danh sách link vào đây..." required style="font-family:monospace; height:180px;"></textarea>
+                        </div>
+                    </div>
+                    <button type="submit" class="v-btn v-btn-neon" style="width:100%; padding:18px !important; justify-content:center;">THỰC HIỆN CẬP NHẬT</button>
+                </form>
+            </div>
+
+            <div style="background:rgba(255,255,255,0.03); padding:20px; border-radius:15px; margin-bottom:25px;">
+                <h4 style="margin:0 0 15px; font-size:13px; color:#fff;">ĐỔI TÊN BỘ PHIM</h4>
+                <form id="renameSeriesForm" style="display:flex; gap:12px;">
+                    <input type="text" id="newSeriesNameInput" class="v-input-field" style="flex-grow:1;">
+                    <button type="submit" class="v-btn v-btn-dark" style="white-space:nowrap;">CẬP NHẬT</button>
+                </form>
+            </div>
+
+            <div style="background:rgba(0, 242, 255, 0.05); padding:20px; border-radius:15px; margin-bottom:25px; border: 1px dashed #00f2ff;">
+                <h4 style="margin:0 0 10px; font-size:13px; color:#00f2ff; text-transform:uppercase;">Đảo ngược Link Data hiện tại</h4>
+                <p style="font-size:11px; opacity:0.7; margin-bottom:15px;">Giữ nguyên số tập nhưng đảo ngược toàn bộ link Server 1 & 2.</p>
+                <button type="button" id="reverseExistingBtn" class="v-btn v-btn-neon" style="width:100%; justify-content:center;">ĐẢO NGƯỢC TẤT CẢ LINK ĐANG CÓ</button>
+            </div>
+
+            <button type="button" id="deleteSeriesBtn" class="v-btn" style="background:rgba(255,59,48,0.1) !important; color:#ff3b30 !important; border:1px solid rgba(255,59,48,0.3) !important; width:100%; padding:16px !important; justify-content:center;">XÓA TOÀN BỘ PHIM NÀY</button>
+        </div>
+    </div>
+</div>
+
+<div id="v-toast"></div>
+
+<script src="../assets/js/vteen-core.js"></script>
+<script src="../assets/js/universe-stream.js"></script>
+<script>
+function showToast(m) {
+    const t = document.getElementById('v-toast');
+    t.innerText = m;
+    t.style.display = 'block';
+    setTimeout(() => { t.style.display = 'none'; }, 3500);
+}
+function openModal(id) { document.getElementById(id).classList.add('show'); }
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+function reverseTextarea(id) {
+    const el = document.getElementById(id);
+    if (!el || !el.value.trim()) return;
+    el.value = el.value.trim().split(/\r?\n/).reverse().join('\n');
+    showToast('Đã đảo thứ tự dòng!');
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+    if (!VTeen.auth.isAdmin()) {
+        window.location.replace('index.html');
+        return;
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    let viewSeries = (params.get('series') || '').trim();
+    if (!viewSeries) {
+        window.location.replace('suaphim.html');
+        return;
+    }
+
+    let allMovies = [];
+    let seriesMovies = [];
+
+    function matchesSeries(row) {
+        const s = String(row.series_name || '').trim();
+        if (viewSeries === 'Phim lẻ') {
+            return !s || s === 'Phim lẻ';
+        }
+        return s === viewSeries;
+    }
+
+    async function loadSeriesData() {
+        allMovies = await VTeen.db.getMovies();
+        seriesMovies = allMovies
+            .filter(matchesSeries)
+            .sort((a, b) => (parseInt(a.episode, 10) || 1) - (parseInt(b.episode, 10) || 1));
+
+        const first = seriesMovies[0] || { poster: '', description: '' };
+        const posterUrl = VTeen.getPosterUrl(first.poster);
+
+        document.getElementById('seriesPosterImg').src = posterUrl;
+        document.getElementById('img-pre').src = posterUrl;
+        document.getElementById('seriesPosterInput').value = first.poster || '';
+        document.getElementById('seriesDescInput').value = first.description || '';
+        document.getElementById('seriesTitleHeading').textContent = viewSeries;
+        document.getElementById('seriesEpBadge').textContent = `${seriesMovies.length} TẬP PHIM`;
+        document.getElementById('addFromEp').value = seriesMovies.length + 1;
+        document.getElementById('replaceStartEp').value = 1;
+        document.getElementById('newSeriesNameInput').value = viewSeries;
+
+        const tbody = document.getElementById('episodeTableBody');
+        tbody.innerHTML = seriesMovies.map(m => `
+            <tr data-episode="${VTeen.escapeHtml(m.episode)}" data-id="${VTeen.escapeHtml(m.id)}">
+                <td style="text-align:center;">
+                    <div style="width:40px; height:40px; background:rgba(0,242,255,0.1); border:1px solid rgba(0,242,255,0.2); border-radius:50%; display:flex; align-items:center; justify-content:center; color:#00f2ff; font-weight:900; margin:0 auto;">
+                        ${VTeen.escapeHtml(m.episode)}
+                    </div>
+                </td>
+                <td><input type="text" class="v-input-field ep-title" value="${VTeen.escapeHtml(m.title)}" style="font-weight:700;"></td>
+                <td><input type="text" class="v-input-field ep-link1" value="${VTeen.escapeHtml(m.embed_link || '')}"></td>
+                <td><input type="text" class="v-input-field ep-link2" value="${VTeen.escapeHtml(m.embed_link_2 || '')}"></td>
+                <td style="text-align:center;">
+                    <a href="xoatap.html?id=${encodeURIComponent(m.id)}" style="color:#ff3b30; font-size:18px;" title="Xóa tập">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </a>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    await loadSeriesData();
+
+    // Save all episodes
+    document.getElementById('saveAllBtn').addEventListener('click', async () => {
+        const rows = document.querySelectorAll('#episodeTableBody tr');
+        const mapById = new Map(allMovies.map(m => [String(m.id), m]));
+
+        rows.forEach(tr => {
+            const id = String(tr.dataset.id);
+            const item = mapById.get(id);
+            if (item) {
+                item.title = tr.querySelector('.ep-title').value.trim();
+                item.embed_link = tr.querySelector('.ep-link1').value.trim();
+                item.embed_link_2 = tr.querySelector('.ep-link2').value.trim();
+            }
+        });
+
+        await VTeen.db.saveMovies(allMovies, `Update episodes for ${viewSeries}`);
+        showToast('✅ Đã lưu tất cả tập phim!');
+    });
+
+    // Poster preview & Info update
+    let pendingPosterFile = null;
+    document.getElementById('posterFileInput').addEventListener('change', function () {
+        if (this.files && this.files[0]) {
+            pendingPosterFile = this.files[0];
+            const r = new FileReader();
+            r.onload = e => { document.getElementById('img-pre').src = e.target.result; };
+            r.readAsDataURL(pendingPosterFile);
+        }
+    });
+    document.getElementById('seriesPosterInput').addEventListener('input', function () {
+        document.getElementById('img-pre').src = VTeen.getPosterUrl(this.value);
+    });
+
+    document.getElementById('infoForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        let posterPath = document.getElementById('seriesPosterInput').value.trim();
+        const desc = document.getElementById('seriesDescInput').value.trim();
+
+        if (pendingPosterFile) {
+            const ext = (pendingPosterFile.name.split('.').pop() || 'jpg').toLowerCase();
+            const newName = `poster_${Date.now()}.${ext}`;
+            const rel = `uploads/posters/${newName}`;
+            if (VTeen.github.isConfigured()) {
+                await VTeen.github.uploadFile(rel, pendingPosterFile, `Upload poster for ${viewSeries}`);
+                posterPath = rel;
+            } else {
+                posterPath = document.getElementById('img-pre').src;
+            }
+            pendingPosterFile = null;
+        }
+
+        allMovies.forEach(m => {
+            if (matchesSeries(m)) {
+                m.poster = posterPath;
+                m.description = desc;
+            }
+        });
+
+        await VTeen.db.saveMovies(allMovies, `Update info for ${viewSeries}`);
+        closeModal('modalInfo');
+        await loadSeriesData();
+        showToast('✅ Cập nhật thông tin thành công!');
+    });
+
+    // Bulk add episodes
+    document.getElementById('bulkAddForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const fromEp = parseInt(document.getElementById('addFromEp').value, 10) || 1;
+        const links1 = document.getElementById('addLinks1').value.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+        const links2 = document.getElementById('addLinks2').value.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+        const max = Math.max(links1.length, links2.length);
+        if (!max) return;
+
+        const sample = seriesMovies[0] || {};
+        const slug = sample.slug || VTeen.slugify(viewSeries);
+        const poster = sample.poster || '';
+        const desc = sample.description || '';
+        let maxId = allMovies.reduce((acc, m) => Math.max(acc, parseInt(m.id, 10) || 0), 0);
+
+        for (let i = 0; i < max; i++) {
+            const ep = fromEp + i;
+            const s1 = links1[i] || '';
+            const s2 = links2[i] || '';
+            const existing = allMovies.find(m => matchesSeries(m) && (parseInt(m.episode, 10) || 1) === ep);
+            if (existing) {
+                if (s1) existing.embed_link = s1;
+                if (s2) existing.embed_link_2 = s2;
+            } else {
+                maxId += 1;
+                allMovies.push({
+                    id: maxId,
+                    title: `${viewSeries} - Tập ${ep}`,
+                    episode: ep,
+                    total_episodes: 1,
+                    embed_link: s1,
+                    embed_link_2: s2,
+                    poster,
+                    type: 'series',
+                    series_name: viewSeries === 'Phim lẻ' ? null : viewSeries,
+                    slug,
+                    description: desc,
+                    added_at: new Date().toISOString().replace('T', ' ').slice(0, 19)
+                });
+            }
+        }
+
+        await VTeen.db.saveMovies(allMovies, `Bulk add ${max} episodes for ${viewSeries}`);
+        closeModal('modalBulk');
+        document.getElementById('addLinks1').value = '';
+        document.getElementById('addLinks2').value = '';
+        await loadSeriesData();
+        showToast(`✅ Đã thêm/cập nhật ${max} tập!`);
+    });
+
+    // Bulk replace links
+    document.getElementById('bulkReplaceForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const fromEp = parseInt(document.getElementById('replaceStartEp').value, 10) || 1;
+        const srv = document.getElementById('replaceTargetServer').value;
+        const links = document.getElementById('replaceNewLinks').value.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+        if (!links.length) return;
+
+        const sample = seriesMovies[0] || {};
+        const slug = sample.slug || VTeen.slugify(viewSeries);
+        const poster = sample.poster || '';
+        let maxId = allMovies.reduce((acc, m) => Math.max(acc, parseInt(m.id, 10) || 0), 0);
+
+        for (let i = 0; i < links.length; i++) {
+            const ep = fromEp + i;
+            const link = links[i];
+            const existing = allMovies.find(m => matchesSeries(m) && (parseInt(m.episode, 10) || 1) === ep);
+            if (existing) {
+                if (srv === '1') existing.embed_link = link;
+                else existing.embed_link_2 = link;
+            } else {
+                maxId += 1;
+                allMovies.push({
+                    id: maxId,
+                    title: `${viewSeries} - Tập ${ep}`,
+                    episode: ep,
+                    total_episodes: 1,
+                    embed_link: srv === '1' ? link : '',
+                    embed_link_2: srv === '2' ? link : '',
+                    poster,
+                    type: 'series',
+                    series_name: viewSeries === 'Phim lẻ' ? null : viewSeries,
+                    slug,
+                    description: sample.description || '',
+                    added_at: new Date().toISOString().replace('T', ' ').slice(0, 19)
+                });
+            }
+        }
+
+        await VTeen.db.saveMovies(allMovies, `Bulk update server ${srv} for ${viewSeries}`);
+        closeModal('modalTools');
+        await loadSeriesData();
+        showToast(`✅ Đã cập nhật ${links.length} tập phim!`);
+    });
+
+    // Rename series
+    document.getElementById('renameSeriesForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const newName = document.getElementById('newSeriesNameInput').value.trim();
+        if (!newName) return;
+        allMovies.forEach(m => {
+            if (matchesSeries(m)) {
+                m.series_name = newName;
+            }
+        });
+        await VTeen.db.saveMovies(allMovies, `Rename series ${viewSeries} -> ${newName}`);
+        window.location.href = `suaphim_detail.html?series=${encodeURIComponent(newName)}`;
+    });
+
+    // Reverse existing links
+    document.getElementById('reverseExistingBtn').addEventListener('click', async () => {
+        if (!confirm('Bạn có chắc muốn ĐẢO NGƯỢC toàn bộ link của tất cả các tập đang có?')) return;
+        if (seriesMovies.length <= 1) return;
+        const l1 = seriesMovies.map(m => m.embed_link).reverse();
+        const l2 = seriesMovies.map(m => m.embed_link_2).reverse();
+        seriesMovies.forEach((m, i) => {
+            m.embed_link = l1[i];
+            m.embed_link_2 = l2[i];
+        });
+        await VTeen.db.saveMovies(allMovies, `Reverse links for ${viewSeries}`);
+        closeModal('modalTools');
+        await loadSeriesData();
+        showToast('✅ Đã đảo ngược toàn bộ link tập phim!');
+    });
+
+    // Delete entire series
+    document.getElementById('deleteSeriesBtn').addEventListener('click', async () => {
+        if (!confirm('CẢNH BÁO: Xóa toàn bộ dữ liệu của phim này? Hành động này KHÔNG THỂ hoàn tác!')) return;
+        const remaining = allMovies.filter(m => !matchesSeries(m));
+        await VTeen.db.saveMovies(remaining, `Delete series ${viewSeries}`);
+        window.location.href = 'suaphim.html';
+    });
+
+    // Search & Jump
+    const tSearch = document.getElementById('tableSearch');
+    tSearch.addEventListener('keyup', () => {
+        const v = tSearch.value.toLowerCase();
+        document.querySelectorAll('#episodeTableBody tr').forEach(r => {
+            r.style.display = r.innerText.toLowerCase().includes(v) ? '' : 'none';
+        });
+    });
+
+    document.getElementById('jumpInput').addEventListener('input', function () {
+        const r = document.querySelector(`#episodeTableBody tr[data-episode="${this.value}"]`);
+        if (r) {
+            r.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            r.style.background = 'rgba(0, 242, 255, 0.15)';
+            setTimeout(() => { r.style.background = ''; }, 2000);
+        }
+    });
+});
+</script>
+</body>
+</html>

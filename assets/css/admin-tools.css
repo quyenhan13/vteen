@@ -1,0 +1,193 @@
+.delete-container {
+    max-width: 500px;
+    margin: 100px auto;
+    background: rgba(20, 20, 20, 0.6);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 30px;
+    padding: 40px;
+    text-align: center;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+}
+
+.warning-icon {
+    font-size: 4rem;
+    color: #ff00c8;
+    margin-bottom: 20px;
+    filter: drop-shadow(0 0 15px rgba(255, 0, 200, 0.4));
+}
+
+.movie-meta {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 15px;
+    padding: 20px;
+    margin: 20px 0;
+    text-align: left;
+    font-size: 0.9rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.movie-meta div {
+    margin-bottom: 5px;
+}
+
+.movie-meta strong {
+    color: #00f2ff;
+}
+
+.btn-confirm {
+    background: linear-gradient(45deg, #ef4444, #b91c1c);
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 50px;
+    font-weight: 800;
+    width: 100%;
+    margin-bottom: 15px;
+    transition: 0.3s;
+    cursor: pointer;
+}
+
+.btn-confirm:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(239, 68, 68, 0.4);
+}
+
+.btn-cancel {
+    display: block;
+    color: rgba(255, 255, 255, 0.6);
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+
+.btn-cancel:hover {
+    color: #fff;
+}
+
+.tool-page {
+    background: #0f172a;
+    color: white;
+    padding: 30px;
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+}
+
+.tool-box {
+    background: #1e293b;
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    border: 1px solid #334155;
+}
+
+.tool-res-item {
+    background: #0f172a;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    border-left: 4px solid #3b82f6;
+    word-break: break-all;
+}
+
+.tool-page textarea {
+    border: 1px solid #334155 !important;
+}
+
+.tool-page textarea:focus {
+    background: #1e293b !important;
+    color: #fff !important;
+    border-color: #3b82f6 !important;
+    box-shadow: none !important;
+}
+
+.tool-result-area .res-item,
+.tool-result-area .tool-res-item {
+    background: #0f172a;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    border-left: 4px solid #3b82f6;
+    word-break: break-all;
+}
+
+.tool-panel-pro {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 24px;
+    padding: 40px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+.tool-panel-icon {
+    background: rgba(0, 242, 255, 0.1);
+    border-radius: 20px;
+}
+
+.tool-heading {
+    letter-spacing: -1px;
+}
+
+.tool-copy-btn {
+    border-radius: 14px;
+}
+
+.modern-textarea {
+    background: rgba(0, 0, 0, 0.3) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 16px !important;
+    color: #00f2ff !important;
+    font-family: 'JetBrains Mono', monospace;
+    padding: 20px;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.modern-textarea:focus {
+    border-color: #00f2ff !important;
+    box-shadow: 0 0 20px rgba(0, 242, 255, 0.15) !important;
+    transform: translateY(-2px);
+}
+
+.btn-neon {
+    background: linear-gradient(135deg, #00f2ff, #7000ff);
+    border: none;
+    border-radius: 14px;
+    color: #000;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 14px;
+    transition: 0.3s;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-neon:hover {
+    box-shadow: 0 0 30px rgba(0, 242, 255, 0.4);
+    transform: scale(1.02);
+    color: #fff;
+}
+
+.res-card {
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+    border: 1px solid transparent;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: 0.3s;
+}
+
+.res-card:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.status-pill {
+    font-size: 0.7rem;
+    padding: 4px 10px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    font-weight: 800;
+}

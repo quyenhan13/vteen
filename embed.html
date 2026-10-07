@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>VTEEN Player</title>
+    <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body, html { width: 100%; height: 100%; background: #000; overflow: hidden; color: #fff; font-family: sans-serif; }
+        :root {
+            --plyr-color-main: #ff2e5f;
+            --plyr-video-background: #000;
+        }
+        .plyr { height: 100% !important; width: 100% !important; }
+        #playerRoot { width: 100%; height: 100%; position: relative; }
+        #yt-wrap { position: relative; width: 100%; height: 100%; }
+        #yt-player, .full-iframe { width: 100%; height: 100%; border: 0; display: block; background: #000; }
+        #yt-end-overlay {
+            display: none;
+            position: absolute;
+            inset: 0;
+            background: rgba(0,0,0,0.92);
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 18px;
+            z-index: 10;
+        }
+        #yt-end-overlay.show { display: flex; }
+        #yt-end-overlay svg { opacity: .6; }
+        #yt-replay-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 36px;
+            background: #fff;
+            color: #111;
+            font-size: 16px;
+            font-weight: 700;
+            border: none;
+            border-radius: 40px;
+            cursor: pointer;
+            letter-spacing: .5px;
+            transition: transform .15s, background .15s;
+        }
+        #yt-replay-btn:hover { transform: scale(1.06); background: #e0e0e0; }
+        #yt-end-overlay p { color: rgba(255,255,255,.55); font-size: 13px; }
+        .msg-center {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #94a3b8;
+            font-size: 14px;
+            padding: 20px;
+            text-align: center;
+        }
+    </style>
+    <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@1/dist/hls.min.js"></script>
+</head>
+<body>
+<div id="playerRoot"></div>
+<script>
+(function () {
+    const root = document.getElementById('playerRoot');
+    const params = new URLSearchParams(window.location.search);
+    let link = (params.get('url') || '').trim();
+
+    if (!link) {
+        root.innerHTML = '<div class="msg-center">Link phim không hợp lệ hoặc bị trống.</div>';
+        return;
+    }
+
+    let parsed;
+    try {
+        parsed = new URL(link);
+    } catch (e) {
+        root.innerHTML = '<div class="msg-center">Định dạng URL không hợp lệ.</div>';
+        return;
+    }
+
+    const host = parsed.hostname.toLowerCase();
+    const path = parsed.pathname || '';
+    const ext = (path.split('.').pop() || '').toLowerCase();
+    const isM3U8 = link.toLowerCase().includes('.m3u8');
+    const isDirectVideo = isM3U8 || ['mp4', 'webm', 'mov'].includes(ext);
+
+    // Check YouTube
+    let ytId = '';
+    if (host.includes('youtube.com') || host.includes('youtube-nocookie.com') || host === 'youtu.be') {
+        const vParam = parsed.searchParams.get('v');
+        if (vParam) {
+            ytId = vParam;
+        } else if (host === 'youtu.be') {
+            ytId = path.replace(/^\/+/, '').split('/')[0];
+        } else {
+            const parts = path.split('/').filter(Boolean);
+            const idx = parts.findIndex(p => p === 'embed' || p === 'v');
+            if (idx !== -1 && parts[idx + 1]) {
+                ytId = parts[idx + 1];
+            }
+        }
+        ytId = ytId.replace(/[^a-zA-Z0-9_-]/g, '');
+    }
+
+    if (isDirectVideo) {
+        root.innerHTML = `<video id="v" playsinline controls></video>`;
+        const video = document.getElementById('v');
+        const defaultOptions = {
+            autoplay: true,
+            controls: [
+                'play-large', 'play', 'progress', 'current-time', 'mute', 'volume',
+                'captions', 'settings', 'pip', 'airplay', 'fullscreen'
+            ],
+            settings: ['quality', 'speed', 'loop'],
+            quality: { default: 1080, options: [4320, 2880, 2160, 1440, 1080, 720, 576, 480, 360, 240] }
+        };
+
+        if (isM3U8) {
+            if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                video.src = link;
+                new Plyr(video, defaultOptions);
+            } else if (typeof Hls !== 'undefined' && Hls.isSupported()) {
+                const hls = new Hls();
+                hls.loadSource(link);
+                hls.attachMedia(video);
+                hls.on(Hls.Events.MANIFEST_PARSED, function () {
+                    const availableQualities = hls.levels.map(l => l.height);
+                    availableQualities.unshift(0);
+                    defaultOptions.quality = {
+                        default: 0,
+                        options: availableQualities,
+                        forced: true,
+                        onChange: (newQuality) => {
+                            if (newQuality === 0) {
+                                hls.currentLevel = -1;
+                            } else {
+                                hls.levels.forEach((level, levelIndex) => {
+                                    if (level.height === newQuality) hls.currentLevel = levelIndex;
+                                });
+                            }
+                        }
+                    };
+                    new Plyr(video, defaultOptions);
+                });
+            }
+        } else {
+            video.src = link;
+            new Plyr(video, defaultOptions);
+        }
+    } else if (ytId) {
+        const ytSrc = `https://www.youtube.com/embed/${ytId}?autoplay=1&rel=0&modestbranding=1&iv_load_policy=3&playsinline=1&enablejsapi=1`;
+        root.innerHTML = `
+            <div id="yt-wrap">
+                <iframe
+                    id="yt-player"
+                    src="${ytSrc}"
+                    allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
+                    allowfullscreen
+                    referrerpolicy="strict-origin-when-cross-origin"
+                ></iframe>
+                <div id="yt-end-overlay">
+                    <svg width="56" height="56" viewBox="0 0 24 24" fill="white">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/>
+                    </svg>
+                    <button id="yt-replay-btn" type="button">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/>
+                        </svg>
+                        XEM LẠI
+                    </button>
+                    <p>Video đã kết thúc</p>
+                </div>
+            </div>
+        `;
+        const iframe = document.getElementById('yt-player');
+        const overlay = document.getElementById('yt-end-overlay');
+        document.getElementById('yt-replay-btn').addEventListener('click', () => {
+            overlay.classList.remove('show');
+            iframe.src = ytSrc;
+        });
+        window.addEventListener('message', function (e) {
+            try {
+                const data = JSON.parse(e.data);
+                if ((data.event === 'infoDelivery' && data.info && data.info.playerState === 0) ||
+                    (data.event === 'onStateChange' && data.info === 0)) {
+                    overlay.classList.add('show');
+                }
+            } catch (err) {}
+        });
+    } else {
+        root.innerHTML = `
+            <iframe
+                class="full-iframe"
+                src="${link.replace(/"/g, '&quot;')}"
+                allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
+                allowfullscreen
+                referrerpolicy="no-referrer"
+            ></iframe>
+        `;
+    }
+})();
+</script>
+</body>
+</html>

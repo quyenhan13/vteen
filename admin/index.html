@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#050508">
+    <title>ADMIN PANEL - VTEEN</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../assets/css/vteen-all.css">
+    <link rel="stylesheet" href="../assets/css/admin.css">
+    <link rel="stylesheet" href="../assets/css/universe-stream.css">
+    <style>
+        .git-config-panel {
+            margin-top: 28px;
+            background: rgba(13, 17, 26, 0.92);
+            border: 1px solid rgba(0, 242, 255, 0.25);
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+        }
+        .git-config-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 14px;
+            margin: 16px 0;
+        }
+        .git-config-grid label {
+            display: block;
+            font-size: 12px;
+            color: #94a3b8;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+        .git-config-grid input {
+            width: 100%;
+            height: 44px;
+            padding: 0 14px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: rgba(0, 0, 0, 0.4);
+            color: #fff;
+            outline: none;
+            font-size: 13px;
+        }
+        .git-config-grid input:focus {
+            border-color: #00f2ff;
+        }
+        .git-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 14px;
+        }
+        .git-btn {
+            padding: 11px 18px;
+            border-radius: 10px;
+            border: 1px solid rgba(0, 242, 255, 0.3);
+            background: rgba(0, 242, 255, 0.12);
+            color: #00f2ff;
+            font-weight: 800;
+            font-size: 13px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .git-btn.primary {
+            background: linear-gradient(135deg, #00f2ff, #0072ff);
+            color: #000;
+            border: none;
+        }
+        .git-btn:hover {
+            filter: brightness(1.1);
+            transform: translateY(-1px);
+        }
+        .git-status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            padding: 5px 12px;
+            border-radius: 999px;
+            font-weight: 800;
+        }
+        .git-status-badge.ok {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.35);
+        }
+        .git-status-badge.local {
+            background: rgba(245, 158, 11, 0.15);
+            color: #fbbf24;
+            border: 1px solid rgba(245, 158, 11, 0.35);
+        }
+    </style>
+</head>
+<body class="universe-stream-page">
+<header class="navbar">
+    <div class="nav-wrap">
+        <a href="../index.html" class="logo">
+            <div class="logo-main">VTEEN UNIVERSE</div>
+            <div class="logo-sub">KHO PHIM TRUC TUYEN</div>
+        </a>
+        <nav class="menu" id="mainMenu"></nav>
+        <button class="mobile-menu-toggle" type="button" aria-label="Mo menu" aria-expanded="false" aria-controls="mainMenu">
+            <i class="fa fa-bars"></i>
+        </button>
+    </div>
+</header>
+
+<div id="adminLoginSection" class="login-container" style="display:none;">
+    <div class="login-box">
+        <h2>🔐 ADMIN PANEL</h2>
+        <div id="adminLoginErr" style="display:none;color:#f87171;background:rgba(239,68,68,0.12);padding:10px 14px;border-radius:12px;margin-bottom:16px;font-size:13px;font-weight:700;"></div>
+        <form id="adminLoginForm">
+            <div class="form-group">
+                <input type="text" id="adminUser" class="form-control-cyber" placeholder="Tên đăng nhập" required autofocus>
+            </div>
+            <div class="form-group">
+                <input type="password" id="adminPass" class="form-control-cyber" placeholder="Mật khẩu" required>
+            </div>
+            <button type="submit" class="btn-cyber" id="adminLoginBtn">ĐĂNG NHẬP NGAY</button>
+        </form>
+        <div style="text-align:center;margin-top:20px;">
+            <a href="../index.html" style="color:#94a3b8;text-decoration:none;font-size:13px;">← Quay lại trang chủ</a>
+        </div>
+    </div>
+</div>
+
+<div id="adminDashSection" class="dashboard-container" style="display:none;">
+    <div class="dash-header">
+        <div>
+            <h1>👨‍💼 QUẢN TRỊ VIÊN</h1>
+            <p class="text-dim mb-0 mt-1">Xin chào, <span class="text-white fw-bold" id="adminNameLabel">Admin</span></p>
+        </div>
+        <a href="#" id="dashLogoutBtn" class="btn-logout">ĐĂNG XUẤT</a>
+    </div>
+
+    <div class="dash-options">
+        <a href="suaphim.html" class="dash-card">
+            <span class="icon">🎬</span>
+            <h2>Quản lý Phim</h2>
+            <p>Sửa phim, thêm tập, thay link hàng loạt.</p>
+        </a>
+
+        <a href="vippro.html" class="dash-card">
+            <span class="icon">⚡</span>
+            <h2>VIP Upload</h2>
+            <p>Thêm phim mới siêu tốc và chuyên nghiệp.</p>
+        </a>
+
+        <a href="getlink.html" class="dash-card">
+            <span class="icon">🔗</span>
+            <h2>Get Link Tool</h2>
+            <p>Công cụ hỗ trợ lấy link phim từ các nguồn.</p>
+        </a>
+
+        <a href="youtube_converter.html" class="dash-card">
+            <span class="icon">🚀</span>
+            <h2>YouTube AI</h2>
+            <p>Quét Playlist, tự lấy Title & Poster và lưu vào DB.</p>
+        </a>
+
+        <a href="admin_upload.html" class="dash-card">
+            <span class="icon">📁</span>
+            <h2>Admin Upload</h2>
+            <p>Quản lý danh sách tệp media đã tải lên.</p>
+        </a>
+
+        <a href="matkhau.html" class="dash-card">
+            <span class="icon">🔑</span>
+            <h2>Đổi mật khẩu</h2>
+            <p>Cập nhật thông tin tài khoản quản trị.</p>
+        </a>
+    </div>
+
+    <div class="git-config-panel">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+            <div>
+                <h3 style="margin:0;font-size:18px;color:#fff;"><i class="fa-brands fa-github"></i> Cấu hình Lưu trữ GitHub (Git Storage)</h3>
+                <p style="margin:4px 0 0;font-size:13px;color:#94a3b8;">Điền GitHub Token để khi Thêm/Sửa/Xóa phim hoặc Upload ảnh, web tự động lưu thẳng vào kho GitHub của Đại ca.</p>
+            </div>
+            <span id="ghStatusBadge" class="git-status-badge local">Chế độ Local</span>
+        </div>
+
+        <div class="git-config-grid">
+            <div>
+                <label>GitHub Username / Owner</label>
+                <input type="text" id="ghOwner" placeholder="VD: quyenhan13">
+            </div>
+            <div>
+                <label>Tên Repository</label>
+                <input type="text" id="ghRepo" placeholder="VD: vteen-movies">
+            </div>
+            <div>
+                <label>Nhánh (Branch)</label>
+                <input type="text" id="ghBranch" placeholder="main" value="main">
+            </div>
+            <div>
+                <label>Personal Access Token (ghp_...)</label>
+                <input type="password" id="ghToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
+            </div>
+        </div>
+
+        <div class="git-actions">
+            <button type="button" class="git-btn primary" id="saveGhConfigBtn"><i class="fa-solid fa-floppy-disk"></i> Lưu cấu hình GitHub</button>
+            <button type="button" class="git-btn" id="syncNowBtn"><i class="fa-solid fa-cloud-arrow-up"></i> Đồng bộ dữ liệu lên GitHub ngay</button>
+            <button type="button" class="git-btn" id="exportJsonBtn"><i class="fa-solid fa-download"></i> Tải file movies.json về máy</button>
+        </div>
+        <div id="ghMsg" style="margin-top:12px;font-size:13px;font-weight:700;color:#34d399;display:none;"></div>
+    </div>
+</div>
+
+<footer class="v-footer">
+    <div class="v-footer-inner">
+        <div class="v-footer-brand">
+            <div class="v-footer-logo">VTEEN MOVIES <span class="v-badge-pro">PRIVATE</span></div>
+            <p class="v-footer-desc">Kho noi dung giai tri rieng tu, toi uu cho trai nghiem xem tren may tinh va dien thoai.</p>
+        </div>
+        <nav class="v-footer-links">
+            <a href="../index.html" class="v-footer-link"><i class="fa-solid fa-cloud-arrow-up"></i><span>Cap nhat</span></a>
+            <a href="../phim.html" class="v-footer-link"><i class="fa-solid fa-film"></i><span>Kho phim</span></a>
+            <a href="index.html" class="v-footer-link"><i class="fa-solid fa-user-shield"></i><span>Admin</span></a>
+        </nav>
+        <div class="v-copyright">&copy; 2026 <b>VTEEN MEDIA GROUP</b>. Van hanh boi <span class="v-neon">VTEEN</span>.</div>
+    </div>
+</footer>
+
+<script src="../assets/js/vteen-core.js"></script>
+<script src="../assets/js/universe-stream.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const loginSec = document.getElementById('adminLoginSection');
+    const dashSec = document.getElementById('adminDashSection');
+
+    function renderView() {
+        if (VTeen.auth.isAdmin()) {
+            loginSec.style.display = 'none';
+            dashSec.style.display = 'block';
+            const s = VTeen.auth.getSession();
+            document.getElementById('adminNameLabel').textContent = s ? s.username : 'Admin';
+            loadGhConfigUI();
+        } else {
+            loginSec.style.display = 'flex';
+            dashSec.style.display = 'none';
+        }
+    }
+
+    function loadGhConfigUI() {
+        const cfg = VTeen.github.getConfig();
+        document.getElementById('ghOwner').value = cfg.owner || '';
+        document.getElementById('ghRepo').value = cfg.repo || '';
+        document.getElementById('ghBranch').value = cfg.branch || 'main';
+        document.getElementById('ghToken').value = cfg.token || '';
+
+        const badge = document.getElementById('ghStatusBadge');
+        if (VTeen.github.isConfigured()) {
+            badge.className = 'git-status-badge ok';
+            badge.innerHTML = `<i class="fa-solid fa-check-circle"></i> Đã kết nối ${VTeen.escapeHtml(cfg.owner)}/${VTeen.escapeHtml(cfg.repo)}`;
+        } else {
+            badge.className = 'git-status-badge local';
+            badge.innerHTML = `<i class="fa-solid fa-circle-info"></i> Chưa điền Token (Lưu trên trình duyệt)`;
+        }
+    }
+
+    function showGhMsg(text, isErr = false) {
+        const el = document.getElementById('ghMsg');
+        el.style.display = 'block';
+        el.style.color = isErr ? '#f87171' : '#34d399';
+        el.textContent = text;
+    }
+
+    document.getElementById('adminLoginForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const errEl = document.getElementById('adminLoginErr');
+        const btn = document.getElementById('adminLoginBtn');
+        errEl.style.display = 'none';
+        btn.disabled = true;
+        btn.textContent = 'ĐANG XÁC THỰC...';
+
+        try {
+            const u = document.getElementById('adminUser').value;
+            const p = document.getElementById('adminPass').value;
+            const res = await VTeen.auth.verifyLogin(u, p, true);
+            if (res.ok) {
+                VTeen.initNavbar();
+                renderView();
+            } else {
+                errEl.textContent = res.msg;
+                errEl.style.display = 'block';
+            }
+        } catch (err) {
+            errEl.textContent = 'Lỗi xác thực: ' + err.message;
+            errEl.style.display = 'block';
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'ĐĂNG NHẬP NGAY';
+        }
+    });
+
+    document.getElementById('dashLogoutBtn').addEventListener('click', (e) => {
+        e.preventDefault();
+        VTeen.auth.logout();
+        window.location.href = '../index.html';
+    });
+
+    document.getElementById('saveGhConfigBtn').addEventListener('click', () => {
+        VTeen.github.saveConfig({
+            owner: document.getElementById('ghOwner').value,
+            repo: document.getElementById('ghRepo').value,
+            branch: document.getElementById('ghBranch').value,
+            token: document.getElementById('ghToken').value
+        });
+        loadGhConfigUI();
+        showGhMsg('✅ Đã lưu cấu hình GitHub thành công!');
+    });
+
+    document.getElementById('syncNowBtn').addEventListener('click', async () => {
+        if (!VTeen.github.isConfigured()) {
+            showGhMsg('⚠️ Vui lòng nhập đầy đủ Owner, Repo và Token trước khi đồng bộ!', true);
+            return;
+        }
+        showGhMsg('⏳ Đang đẩy dữ liệu movies.json & images.json lên GitHub...');
+        try {
+            const movies = await VTeen.db.getMovies();
+            const images = await VTeen.db.getImages();
+            await VTeen.github.saveJsonFile('data/movies.json', movies, 'Sync movies.json from VTEEN Admin');
+            await VTeen.github.saveJsonFile('data/images.json', images, 'Sync images.json from VTEEN Admin');
+            showGhMsg('✅ Đã đồng bộ dữ liệu lên kho GitHub thành công!');
+        } catch (err) {
+            showGhMsg('❌ Lỗi đồng bộ GitHub: ' + err.message, true);
+        }
+    });
+
+    document.getElementById('exportJsonBtn').addEventListener('click', async () => {
+        const movies = await VTeen.db.getMovies();
+        const blob = new Blob([JSON.stringify(movies, null, 2)], { type: 'application/json' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'movies.json';
+        a.click();
+    });
+
+    renderView();
+});
+</script>
+</body>
+</html>

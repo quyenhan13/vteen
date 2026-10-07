@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#050508">
+    <title>Quản lý Upload Media - VTEEN Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../assets/css/vteen-all.css">
+    <link rel="stylesheet" href="../assets/css/admin.css">
+    <link rel="stylesheet" href="../assets/css/universe-stream.css">
+</head>
+<body class="universe-stream-page">
+<header class="navbar">
+    <div class="nav-wrap">
+        <a href="../index.html" class="logo">
+            <div class="logo-main">VTEEN UNIVERSE</div>
+            <div class="logo-sub">KHO PHIM TRUC TUYEN</div>
+        </a>
+        <nav class="menu" id="mainMenu"></nav>
+        <button class="mobile-menu-toggle" type="button" aria-label="Mo menu" aria-expanded="false" aria-controls="mainMenu">
+            <i class="fa fa-bars"></i>
+        </button>
+    </div>
+</header>
+
+<div class="particles" id="particles"></div>
+
+<div class="container">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin:28px 0 36px;flex-wrap:wrap;gap:12px;">
+        <div>
+            <h1 style="margin:0;">📤 Quản lý Upload Media</h1>
+            <p class="text-dim small" style="margin-top:8px;">Tổng số: <span id="mediaCount">0</span> tệp tin đã tải lên</p>
+        </div>
+        <a href="index.html" class="btn-logout">← Dashboard</a>
+    </div>
+
+    <div id="msgBox" class="msg" style="display:none;"></div>
+
+    <div class="box">
+        <h2>Danh sách đã upload (<span id="mediaCountBox">0</span> file)</h2>
+        <div class="grid" id="mediaGrid"></div>
+    </div>
+</div>
+
+<footer class="v-footer">
+    <div class="v-footer-inner">
+        <div class="v-footer-brand">
+            <div class="v-footer-logo">VTEEN MOVIES <span class="v-badge-pro">PRIVATE</span></div>
+            <p class="v-footer-desc">Kho noi dung giai tri rieng tu, toi uu cho trai nghiem xem tren may tinh va dien thoai.</p>
+        </div>
+        <nav class="v-footer-links">
+            <a href="../index.html" class="v-footer-link"><i class="fa-solid fa-cloud-arrow-up"></i><span>Cap nhat</span></a>
+            <a href="../phim.html" class="v-footer-link"><i class="fa-solid fa-film"></i><span>Kho phim</span></a>
+            <a href="index.html" class="v-footer-link"><i class="fa-solid fa-user-shield"></i><span>Admin</span></a>
+        </nav>
+        <div class="v-copyright">&copy; 2026 <b>VTEEN MEDIA GROUP</b>. Van hanh boi <span class="v-neon">VTEEN</span>.</div>
+    </div>
+</footer>
+
+<script src="../assets/js/vteen-core.js"></script>
+<script src="../assets/js/universe-stream.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+    if (!VTeen.auth.isAdmin()) {
+        window.location.replace('index.html');
+        return;
+    }
+
+    async function renderMedia() {
+        const files = await VTeen.db.getImages();
+        document.getElementById('mediaCount').textContent = files.length;
+        document.getElementById('mediaCountBox').textContent = files.length;
+
+        const grid = document.getElementById('mediaGrid');
+        grid.innerHTML = files.map(f => {
+            const ext = (String(f.file_path || '').split('.').pop() || '').toLowerCase();
+            const isVideo = ['mp4', 'mov', 'webm'].includes(ext);
+            const src = VTeen.url(f.file_path);
+
+            return `
+                <div class="card" style="position:relative;">
+                    ${isVideo
+                        ? `<video muted><source src="${VTeen.escapeHtml(src)}" type="video/mp4"></video>`
+                        : `<img src="${VTeen.escapeHtml(src)}" alt="${VTeen.escapeHtml(f.short_code)}">`
+                    }
+                    <button type="button" class="del-btn" data-code="${VTeen.escapeHtml(f.short_code)}" style="position:absolute;top:10px;right:10px;">Xóa</button>
+                </div>
+            `;
+        }).join('');
+
+        grid.querySelectorAll('.del-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                if (!confirm('Xóa file này?')) return;
+                const code = btn.dataset.code;
+                const current = await VTeen.db.getImages();
+                const target = current.find(i => i.short_code === code);
+                const updated = current.filter(i => i.short_code !== code);
+                if (target && target.file_path && !target.file_path.startsWith('data:') && VTeen.github.isConfigured()) {
+                    try {
+                        await VTeen.github.deleteContent(target.file_path, `Delete ${target.file_path}`);
+                    } catch (e) {}
+                }
+                await VTeen.db.saveImages(updated, `Delete upload ${code}`);
+                const msgBox = document.getElementById('msgBox');
+                msgBox.textContent = '✅ Đã xóa file thành công!';
+                msgBox.style.display = 'block';
+                await renderMedia();
+            });
+        });
+    }
+
+    await renderMedia();
+});
+</script>
+</body>
+</html>

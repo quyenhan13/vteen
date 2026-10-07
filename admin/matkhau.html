@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#050508">
+    <title>Quản lý mật khẩu admin - VTEEN</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../assets/css/vteen-all.css">
+    <link rel="stylesheet" href="../assets/css/admin.css">
+    <link rel="stylesheet" href="../assets/css/universe-stream.css">
+    <style>
+        .password-container { max-width: 860px; }
+        .password-topbar { margin-bottom: 28px; }
+        .password-panel {
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 34px;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+        }
+        .account-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 16px 18px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 14px;
+            background: rgba(0, 0, 0, 0.2);
+            margin-bottom: 26px;
+        }
+        .password-alert {
+            border-radius: 14px;
+            padding: 14px 16px;
+            margin-bottom: 24px;
+            font-weight: 600;
+            display: none;
+        }
+        .password-alert.success {
+            background: rgba(16, 185, 129, 0.12);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #34d399;
+        }
+        .password-alert.danger {
+            background: rgba(239, 68, 68, 0.12);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #f87171;
+        }
+        .password-form label {
+            display: block;
+            margin-bottom: 10px;
+            color: rgba(255, 255, 255, 0.86);
+            font-weight: 700;
+        }
+        .password-field { margin-bottom: 22px; }
+        .password-actions { display: flex; gap: 14px; align-items: center; }
+        .btn-soft {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 9px;
+            min-height: 52px;
+            padding: 0 20px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+            text-decoration: none;
+            font-weight: 700;
+        }
+        .password-actions .btn-cyber { width: auto; min-height: 52px; padding: 0 24px; }
+    </style>
+</head>
+<body class="universe-stream-page">
+<header class="navbar">
+    <div class="nav-wrap">
+        <a href="../index.html" class="logo">
+            <div class="logo-main">VTEEN UNIVERSE</div>
+            <div class="logo-sub">KHO PHIM TRUC TUYEN</div>
+        </a>
+        <nav class="menu" id="mainMenu"></nav>
+        <button class="mobile-menu-toggle" type="button" aria-label="Mo menu" aria-expanded="false" aria-controls="mainMenu">
+            <i class="fa fa-bars"></i>
+        </button>
+    </div>
+</header>
+
+<div class="dashboard-container password-container">
+    <div class="dash-header password-topbar">
+        <div>
+            <h1><i class="fa-solid fa-key"></i> Quản lý mật khẩu</h1>
+            <p class="text-dim mb-0 mt-1">Tài khoản đang đăng nhập: <span class="text-white fw-bold" id="curUserSpan">Admin</span></p>
+        </div>
+        <a href="index.html" class="btn-logout">
+            <i class="fa-solid fa-house"></i> Dashboard
+        </a>
+    </div>
+
+    <div class="password-panel">
+        <div class="account-row">
+            <span>Tài khoản admin</span>
+            <strong id="curUserStrong">admin</strong>
+        </div>
+
+        <div id="pwAlert" class="password-alert"></div>
+
+        <form id="pwForm" class="password-form" autocomplete="off">
+            <div class="password-field">
+                <label for="current_password">Mật khẩu hiện tại</label>
+                <input type="password" id="current_password" class="form-control-cyber" required>
+            </div>
+
+            <div class="password-field">
+                <label for="new_password">Mật khẩu mới (tối thiểu 8 ký tự)</label>
+                <input type="password" id="new_password" class="form-control-cyber" minlength="8" required>
+            </div>
+
+            <div class="password-field">
+                <label for="confirm_password">Nhập lại mật khẩu mới</label>
+                <input type="password" id="confirm_password" class="form-control-cyber" minlength="8" required>
+            </div>
+
+            <div class="password-actions">
+                <a href="index.html" class="btn-soft">
+                    <i class="fa-solid fa-arrow-left"></i> Quay lại
+                </a>
+                <button type="submit" class="btn-cyber">
+                    <i class="fa-solid fa-rotate"></i> Đổi mật khẩu
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="../assets/js/vteen-core.js"></script>
+<script src="../assets/js/universe-stream.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    if (!VTeen.auth.isAdmin()) {
+        window.location.replace('index.html');
+        return;
+    }
+
+    const s = VTeen.auth.getSession();
+    const u = s ? s.username : 'admin';
+    document.getElementById('curUserSpan').textContent = u;
+    document.getElementById('curUserStrong').textContent = u;
+
+    const alertBox = document.getElementById('pwAlert');
+    function showNotice(msg, ok) {
+        alertBox.className = 'password-alert ' + (ok ? 'success' : 'danger');
+        alertBox.textContent = msg;
+        alertBox.style.display = 'block';
+    }
+
+    document.getElementById('pwForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const cur = document.getElementById('current_password').value;
+        const nw = document.getElementById('new_password').value;
+        const cf = document.getElementById('confirm_password').value;
+
+        if (nw !== cf) {
+            showNotice('Mật khẩu mới nhập lại chưa khớp.', false);
+            return;
+        }
+        if (nw.length < 8) {
+            showNotice('Mật khẩu mới cần tối thiểu 8 ký tự.', false);
+            return;
+        }
+
+        try {
+            const res = await VTeen.auth.changePassword(u, cur, nw);
+            showNotice(res.msg, res.ok);
+            if (res.ok) e.target.reset();
+        } catch (err) {
+            showNotice('Lỗi khi đổi mật khẩu: ' + err.message, false);
+        }
+    });
+});
+</script>
+</body>
+</html>

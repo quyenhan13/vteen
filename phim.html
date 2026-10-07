@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#050508">
+    <title>Kho Phim Moi - Xem Phim Online Chat Luong Cao</title>
+    <meta name="description" content="Kham pha kho phim khong lo tai VTEEN voi hang ngan bo phim bo, phim le moi nhat.">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/vteen-all.css">
+    <link rel="stylesheet" href="assets/css/universe-stream.css">
+</head>
+<body class="universe-stream-page">
+<header class="navbar">
+    <div class="nav-wrap">
+        <a href="index.html" class="logo">
+            <div class="logo-main">VTEEN UNIVERSE</div>
+            <div class="logo-sub">KHO PHIM TRUC TUYEN</div>
+        </a>
+        <nav class="menu" id="mainMenu"></nav>
+        <button class="mobile-menu-toggle" type="button" aria-label="Mo menu" aria-expanded="false" aria-controls="mainMenu">
+            <i class="fa fa-bars"></i>
+        </button>
+    </div>
+</header>
+
+<main class="phim-page">
+    <section class="compact-header">
+        <div class="header-left">
+            <div class="user-greeting">
+                <h4 id="greetingHeading">
+                    Hi, Guest!
+                    <span class="role-badge role-member">THANH VIEN</span>
+                </h4>
+                <p id="greetingSub">He thong Nguoi xem da san sang</p>
+            </div>
+
+            <div class="stats-mini">
+                <div class="stat-tag">
+                    DB <span id="totalMoviesCount">0</span>
+                </div>
+                <div class="stat-tag">
+                    STATUS <span>ONLINE</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="header-right">
+            <a href="admin/index.html" class="admin-panel-btn" id="adminPanelBtn" style="display:none;">
+                <i class="fa-solid fa-user-shield"></i>
+                <span>ADMIN PANEL</span>
+            </a>
+
+            <form id="searchForm" class="search-bar-pro">
+                <input
+                    type="text"
+                    id="searchInput"
+                    name="search"
+                    placeholder="Tim kiem phim..."
+                    autocomplete="off"
+                >
+                <button type="submit" aria-label="Tim kiem">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </button>
+            </form>
+        </div>
+    </section>
+
+    <section class="movie-section">
+        <div class="search-result-title" id="searchResultTitle" style="display:none;"></div>
+        <div class="movie-grid" id="movieGrid"></div>
+    </section>
+</main>
+
+<footer class="v-footer">
+    <div class="v-footer-inner">
+        <div class="v-footer-brand">
+            <div class="v-footer-logo">
+                VTEEN MOVIES
+                <span class="v-badge-pro">PRIVATE</span>
+            </div>
+            <p class="v-footer-desc">
+                Kho noi dung giai tri rieng tu, toi uu cho trai nghiem xem tren may tinh va dien thoai.
+            </p>
+        </div>
+        <nav class="v-footer-links">
+            <a href="index.html" class="v-footer-link"><i class="fa-solid fa-cloud-arrow-up"></i><span>Cap nhat</span></a>
+            <a href="phim.html" class="v-footer-link"><i class="fa-solid fa-film"></i><span>Kho phim</span></a>
+            <a href="admin/index.html" class="v-footer-link"><i class="fa-solid fa-user-shield"></i><span>Admin</span></a>
+        </nav>
+        <div class="v-copyright">&copy; 2026 <b>VTEEN MEDIA GROUP</b>. Van hanh boi <span class="v-neon">VTEEN</span>.</div>
+    </div>
+</footer>
+
+<script src="assets/js/vteen-core.js"></script>
+<script src="assets/js/universe-stream.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+    const session = VTeen.auth.getSession();
+    const isAdmin = VTeen.auth.isAdmin();
+    const username = session ? session.username : 'Khach';
+
+    const greetingHeading = document.getElementById('greetingHeading');
+    const greetingSub = document.getElementById('greetingSub');
+    const adminBtn = document.getElementById('adminPanelBtn');
+
+    greetingHeading.innerHTML = `
+        Hi, ${VTeen.escapeHtml(username)}!
+        <span class="role-badge ${isAdmin ? 'role-admin' : 'role-member'}">
+            ${isAdmin ? 'ADMIN PRO' : 'THANH VIEN'}
+        </span>
+    `;
+    greetingSub.textContent = `He thong ${isAdmin ? 'Quan tri vien' : 'Nguoi xem'} da san sang`;
+    if (isAdmin && adminBtn) adminBtn.style.display = 'inline-flex';
+
+    const searchInput = document.getElementById('searchInput');
+    const searchForm = document.getElementById('searchForm');
+    const searchResultTitle = document.getElementById('searchResultTitle');
+    const movieGrid = document.getElementById('movieGrid');
+    const totalCountEl = document.getElementById('totalMoviesCount');
+    const fallbackPoster = VTeen.getFallbackPoster();
+
+    const params = new URLSearchParams(window.location.search);
+    const initialSearch = params.get('search') || '';
+    searchInput.value = initialSearch;
+
+    async function renderMovies(query) {
+        const q = String(query || '').trim();
+        const movies = await VTeen.db.getGroupedMovies(q);
+        totalCountEl.textContent = movies.length;
+
+        if (q !== '') {
+            searchResultTitle.style.display = 'block';
+            searchResultTitle.innerHTML = `Ket qua tim kiem cho: <strong>${VTeen.escapeHtml(q)}</strong>`;
+        } else {
+            searchResultTitle.style.display = 'none';
+        }
+
+        if (!movies.length) {
+            movieGrid.innerHTML = `
+                <div class="empty-movie">
+                    <i class="fa-solid fa-face-frown"></i>
+                    <h3>Khong tim thay phim</h3>
+                    <p>Khong co phim nao khop voi tu khoa cua ban.</p>
+                </div>
+            `;
+            return;
+        }
+
+        movieGrid.innerHTML = movies.map(m => {
+            const name = VTeen.escapeHtml(m.display_name || 'Khong ro ten');
+            const slug = encodeURIComponent(m.slug || '');
+            const posterUrl = VTeen.escapeHtml(VTeen.getPosterUrl(m.poster));
+            const totalEps = parseInt(m.total_eps, 10) || 1;
+            const latestEp = parseInt(m.latest_ep, 10) || 1;
+
+            return `
+                <a href="xem.html?slug=${slug}" class="movie-card">
+                    <div class="poster">
+                        <div class="tag-type">${totalEps > 1 ? 'SERIES' : 'MOVIE'}</div>
+                        <div class="tag-ep">${latestEp} EP</div>
+                        <img
+                            src="${posterUrl}"
+                            alt="${name}"
+                            loading="lazy"
+                            onload="this.classList.add('loaded'); this.closest('.poster')?.classList.add('done');"
+                            onerror="this.onerror=null; this.src='${VTeen.escapeHtml(fallbackPoster)}'; this.classList.add('loaded'); this.closest('.poster')?.classList.add('done');"
+                        >
+                        <div class="play-btn"></div>
+                    </div>
+                    <div class="info">
+                        <div class="title">${name}</div>
+                        <div class="ep-count">${totalEps} tap phim</div>
+                    </div>
+                </a>
+            `;
+        }).join('');
+    }
+
+    await renderMovies(initialSearch);
+
+    searchForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        renderMovies(searchInput.value);
+    });
+
+    searchInput.addEventListener('input', () => {
+        renderMovies(searchInput.value);
+    });
+});
+</script>
+</body>
+</html>

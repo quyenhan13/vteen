@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#050508">
+    <title>Chia se tep - VTEEN Movies</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/vteen-all.css">
+    <link rel="stylesheet" href="assets/css/player-watch.css">
+    <link rel="stylesheet" href="assets/css/universe-stream.css">
+</head>
+<body class="universe-stream-page">
+<header class="navbar">
+    <div class="nav-wrap">
+        <a href="index.html" class="logo">
+            <div class="logo-main">VTEEN UNIVERSE</div>
+            <div class="logo-sub">KHO PHIM TRUC TUYEN</div>
+        </a>
+        <nav class="menu" id="mainMenu"></nav>
+        <button class="mobile-menu-toggle" type="button" aria-label="Mo menu" aria-expanded="false" aria-controls="mainMenu">
+            <i class="fa fa-bars"></i>
+        </button>
+    </div>
+</header>
+
+<div class="particles" id="particles"></div>
+
+<div class="container p-container" id="pRoot">
+    <div class="p-header">
+        <h1 class="p-title" id="fileTitle">Đang tải tệp...</h1>
+        <p class="p-subtitle">Trang xem tep va chia se lien ket nhanh</p>
+    </div>
+
+    <div class="media-box" id="mediaBox"></div>
+
+    <div class="link-box-cyber">
+        <div class="link-label">LINK CHIA SE TRUC TIEP</div>
+        <div class="input-action-group">
+            <input type="text" id="shortLink" value="" readonly>
+            <button type="button" id="copyBtn" class="copy-btn-cyber">SAO CHEP LINK</button>
+        </div>
+    </div>
+
+    <div class="action-footer">
+        <a href="index.html" class="back-btn-cyber">
+            <i class="fa-solid fa-arrow-left"></i> Ve trang chu
+        </a>
+    </div>
+</div>
+
+<footer class="v-footer">
+    <div class="v-footer-inner">
+        <div class="v-footer-brand">
+            <div class="v-footer-logo">
+                VTEEN MOVIES
+                <span class="v-badge-pro">PRIVATE</span>
+            </div>
+            <p class="v-footer-desc">
+                Kho noi dung giai tri rieng tu, toi uu cho trai nghiem xem tren may tinh va dien thoai.
+            </p>
+        </div>
+        <nav class="v-footer-links">
+            <a href="index.html" class="v-footer-link"><i class="fa-solid fa-cloud-arrow-up"></i><span>Cap nhat</span></a>
+            <a href="phim.html" class="v-footer-link"><i class="fa-solid fa-film"></i><span>Kho phim</span></a>
+            <a href="admin/index.html" class="v-footer-link"><i class="fa-solid fa-user-shield"></i><span>Admin</span></a>
+        </nav>
+        <div class="v-copyright">&copy; 2026 <b>VTEEN MEDIA GROUP</b>. Van hanh boi <span class="v-neon">VTEEN</span>.</div>
+    </div>
+</footer>
+
+<script src="assets/js/vteen-core.js"></script>
+<script src="assets/js/universe-stream.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+    const params = new URLSearchParams(window.location.search);
+    const code = (params.get('code') || '').trim();
+    if (!code) {
+        window.location.replace('index.html');
+        return;
+    }
+
+    const images = await VTeen.db.getImages();
+    const file = images.find(i => String(i.short_code) === code);
+
+    if (!file) {
+        document.getElementById('pRoot').innerHTML = `
+            <div style="text-align:center;margin-top:100px;">
+                <h2 style="color:#ef4444;">Khong tim thay file</h2>
+                <p>Ma chia se khong ton tai hoac da bi xoa.</p>
+                <a href="index.html" class="back-btn-cyber" style="margin-top:20px;display:inline-flex;">Ve trang chu</a>
+            </div>
+        `;
+        return;
+    }
+
+    const name = (file.original_name && !file.original_name.includes('???'))
+        ? file.original_name
+        : `File ${code.toUpperCase()}`;
+    document.title = `${name} - VTEEN Movies`;
+    document.getElementById('fileTitle').textContent = name;
+
+    const src = VTeen.url(file.file_path);
+    const ext = (String(file.file_path || '').split('.').pop() || '').toLowerCase();
+    const isVideo = ['mp4', 'webm', 'mov'].includes(ext);
+
+    const mediaBox = document.getElementById('mediaBox');
+    if (isVideo) {
+        const mime = ext === 'webm' ? 'video/webm' : (ext === 'mov' ? 'video/quicktime' : 'video/mp4');
+        mediaBox.innerHTML = `
+            <div class="player-wrapper">
+                <video controls playsinline preload="metadata">
+                    <source src="${VTeen.escapeHtml(src)}" type="${mime}">
+                    Trinh duyet khong ho tro video.
+                </video>
+            </div>
+        `;
+    } else {
+        mediaBox.innerHTML = `
+            <div class="image-wrapper">
+                <img src="${VTeen.escapeHtml(src)}" alt="${VTeen.escapeHtml(name)}" loading="eager" decoding="async">
+            </div>
+        `;
+    }
+
+    const shortInput = document.getElementById('shortLink');
+    shortInput.value = window.location.href;
+
+    const copyBtn = document.getElementById('copyBtn');
+    copyBtn.addEventListener('click', async () => {
+        const orig = copyBtn.textContent;
+        try {
+            await navigator.clipboard.writeText(shortInput.value);
+        } catch (e) {
+            shortInput.select();
+            document.execCommand('copy');
+        }
+        copyBtn.textContent = 'DA COPY';
+        copyBtn.classList.add('active');
+        setTimeout(() => {
+            copyBtn.textContent = orig;
+            copyBtn.classList.remove('active');
+        }, 2000);
+    });
+});
+</script>
+</body>
+</html>

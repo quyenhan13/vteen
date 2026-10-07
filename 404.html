@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Đang chuyển hướng - VTEEN</title>
+    <script>
+    (function () {
+        const loc = window.location;
+        const path = loc.pathname;
+        const search = loc.search;
+
+        // Replace .php with .html if someone visits old .php URLs
+        if (path.endsWith('.php')) {
+            loc.replace(path.slice(0, -4) + '.html' + search);
+            return;
+        }
+
+        // Handle /xem/slug/ep or /xem/slug
+        const xemMatch = path.match(/^(.*)\/xem\/([^/]+)(?:\/([0-9]+))?\/?$/);
+        if (xemMatch) {
+            const base = xemMatch[1] || '';
+            const slug = xemMatch[2];
+            const ep = xemMatch[3] ? `&ep=${xemMatch[3]}` : '';
+            loc.replace(`${base}/xem.html?slug=${encodeURIComponent(slug)}${ep}`);
+            return;
+        }
+
+        // Handle /p/code
+        const pMatch = path.match(/^(.*)\/p\/([a-z0-9]+)\/?$/i);
+        if (pMatch) {
+            const base = pMatch[1] || '';
+            loc.replace(`${base}/p.html?code=${encodeURIComponent(pMatch[2])}`);
+            return;
+        }
+
+        // Fallback to index.html
+        loc.replace('index.html');
+    })();
+    </script>
+</head>
+<body style="background:#050508;color:#fff;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;">
+    Đang chuyển hướng...
+</body>
+</html>

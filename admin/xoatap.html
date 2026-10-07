@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#050508">
+    <title>Xóa tập phim - VTEEN Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../assets/css/vteen-all.css">
+    <link rel="stylesheet" href="../assets/css/admin.css">
+    <link rel="stylesheet" href="../assets/css/admin-tools.css">
+    <link rel="stylesheet" href="../assets/css/universe-stream.css">
+</head>
+<body class="universe-stream-page">
+<header class="navbar">
+    <div class="nav-wrap">
+        <a href="../index.html" class="logo">
+            <div class="logo-main">VTEEN UNIVERSE</div>
+            <div class="logo-sub">KHO PHIM TRUC TUYEN</div>
+        </a>
+        <nav class="menu" id="mainMenu"></nav>
+        <button class="mobile-menu-toggle" type="button" aria-label="Mo menu" aria-expanded="false" aria-controls="mainMenu">
+            <i class="fa fa-bars"></i>
+        </button>
+    </div>
+</header>
+
+<div class="particles" id="particles"></div>
+
+<div class="container">
+    <div class="delete-container">
+        <div class="warning-icon">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+        <h2 style="font-weight:800;margin-bottom:12px;">Xóa tập phim?</h2>
+        <p class="text-dim small">Hành động này không thể hoàn tác. Bạn có chắc chắn muốn xóa tập này khỏi hệ thống?</p>
+
+        <div class="movie-meta" id="movieMeta"></div>
+
+        <button type="button" id="confirmDeleteBtn" class="btn-confirm">XÁC NHẬN XÓA</button>
+        <a href="suaphim.html" id="cancelBackLink" class="btn-cancel">Hủy bỏ và quay lại</a>
+    </div>
+</div>
+
+<script src="../assets/js/vteen-core.js"></script>
+<script src="../assets/js/universe-stream.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+    if (!VTeen.auth.isAdmin()) {
+        window.location.replace('index.html');
+        return;
+    }
+
+    const id = parseInt(new URLSearchParams(window.location.search).get('id') || '0', 10);
+    if (!id) {
+        window.location.replace('suaphim.html');
+        return;
+    }
+
+    const allMovies = await VTeen.db.getMovies();
+    const movie = allMovies.find(m => parseInt(m.id, 10) === id);
+    if (!movie) {
+        window.location.replace('suaphim.html');
+        return;
+    }
+
+    const seriesName = movie.series_name || 'Phim lẻ';
+    document.getElementById('movieMeta').innerHTML = `
+        <div><strong>Series:</strong> ${VTeen.escapeHtml(seriesName)}</div>
+        <div><strong>Tập:</strong> ${VTeen.escapeHtml(movie.episode)}</div>
+        <div><strong>Tiêu đề:</strong> ${VTeen.escapeHtml(movie.title)}</div>
+    `;
+    const backUrl = `suaphim_detail.html?series=${encodeURIComponent(seriesName)}`;
+    document.getElementById('cancelBackLink').href = backUrl;
+
+    document.getElementById('confirmDeleteBtn').addEventListener('click', async () => {
+        const remaining = allMovies.filter(m => parseInt(m.id, 10) !== id);
+        await VTeen.db.saveMovies(remaining, `Delete episode id ${id} (${seriesName})`);
+        window.location.href = backUrl;
+    });
+});
+</script>
+</body>
+</html>

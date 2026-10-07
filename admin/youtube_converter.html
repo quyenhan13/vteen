@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#050508">
+    <title>YouTube Scanner V4 Ultra - VTEEN Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../assets/css/vteen-all.css">
+    <link rel="stylesheet" href="../assets/css/admin.css">
+    <link rel="stylesheet" href="../assets/css/universe-stream.css">
+    <style>
+        .converter-card { background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 25px; padding: 30px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8); }
+        .cyber-input { background: #020617; border: 1px solid #1e293b; color: #38bdf8; border-radius: 15px; padding: 15px; font-size: 14px; width: 100%; transition: 0.3s; }
+        .cyber-input:focus { border-color: #38bdf8; box-shadow: 0 0 15px rgba(56, 189, 248, 0.3); outline: none; }
+        .vteen-btn { background: linear-gradient(135deg, #ff2e5f 0%, #ff6b6b 100%); color: white; border: none; padding: 15px 30px; border-radius: 50px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; }
+        .status-badge { font-size: 11px; padding: 5px 15px; border-radius: 20px; background: rgba(56, 189, 248, 0.1); color: #38bdf8; margin-bottom: 10px; display: inline-block; }
+        .result-table { color: #f8fafc; font-size: 0.85rem; }
+        .result-table td { vertical-align: middle; border-bottom: 1px solid #1e293b; padding: 12px; }
+        .thumb-preview { width: 90px; height: 50px; object-fit: cover; border-radius: 8px; border: 1px solid #334155; }
+        .save-panel { background: rgba(56, 189, 248, 0.03); border: 1px dashed #38bdf8; border-radius: 20px; padding: 25px; margin-bottom: 30px; }
+    </style>
+</head>
+<body class="universe-stream-page">
+<header class="navbar">
+    <div class="nav-wrap">
+        <a href="../index.html" class="logo">
+            <div class="logo-main">VTEEN UNIVERSE</div>
+            <div class="logo-sub">KHO PHIM TRUC TUYEN</div>
+        </a>
+        <nav class="menu" id="mainMenu"></nav>
+        <button class="mobile-menu-toggle" type="button" aria-label="Mo menu" aria-expanded="false" aria-controls="mainMenu">
+            <i class="fa fa-bars"></i>
+        </button>
+    </div>
+</header>
+
+<div class="container py-5">
+    <div class="d-flex align-items-center mb-4">
+        <a href="index.html" class="btn btn-outline-secondary btn-sm rounded-pill me-3"><i class="fa-solid fa-arrow-left"></i></a>
+        <h2 class="text-white fw-bold mb-0">🚀 YOUTUBE SCANNER V4 (ULTRA)</h2>
+    </div>
+
+    <div class="converter-card">
+        <div class="mb-4">
+            <div class="status-badge">BƯỚC 1: DÁN LINK VIDEO HOẶC MÃ NGUỒN PLAYLIST YOUTUBE VÀO ĐÂY</div>
+            <textarea id="input-links" class="cyber-input" rows="4" placeholder="Dán danh sách link YouTube (watch?v=..., youtu.be/...) hoặc mã HTML trang Playlist..."></textarea>
+            <button id="scan-btn" class="vteen-btn w-100 mt-3" type="button">BẮT ĐẦU QUÉT DỮ LIỆU</button>
+        </div>
+
+        <div id="save-section" class="save-panel d-none">
+            <div class="status-badge text-warning">BƯỚC 2: CẤU HÌNH LƯU DATABASE GIT</div>
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="small text-muted mb-1 d-block">Tên phim:</label>
+                    <input type="text" id="db-series" list="series-list" class="cyber-input" placeholder="Ví dụ: Doraemon">
+                    <datalist id="series-list"></datalist>
+                </div>
+                <div class="col-md-3">
+                    <label class="small text-muted mb-1 d-block">Đường dẫn phim (Slug):</label>
+                    <input type="text" id="db-slug" class="cyber-input" placeholder="ví dụ: doraemon-2024">
+                </div>
+                <div class="col-md-2">
+                    <label class="small text-muted mb-1 d-block">Server:</label>
+                    <select id="db-server" class="cyber-input">
+                        <option value="1">Server 1</option>
+                        <option value="2">Server 2</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="small text-muted mb-1 d-block">Tập đầu:</label>
+                    <input type="number" id="db-start-ep" class="cyber-input text-center" value="1">
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button id="save-db-btn" class="vteen-btn w-100 py-2" type="button" style="border-radius:15px; font-size:12px;">LƯU NGAY</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <div class="status-badge" id="res-count">ĐÃ TÌM THẤY: 0 ID</div>
+            <table class="table result-table">
+                <thead><tr class="text-muted small"><th>#</th><th>Poster</th><th>Tiêu đề</th><th>Link Embed</th></tr></thead>
+                <tbody id="result-body"><tr><td colspan="4" class="text-center text-muted py-5">Đang chờ bạn dán link...</td></tr></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script src="../assets/js/vteen-core.js"></script>
+<script src="../assets/js/universe-stream.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+    if (!VTeen.auth.isAdmin()) {
+        window.location.replace('index.html');
+        return;
+    }
+
+    let currentVideos = [];
+    const allMovies = await VTeen.db.getMovies();
+    const seriesNames = [...new Set(allMovies.map(m => m.series_name).filter(Boolean))].sort();
+    document.getElementById('series-list').innerHTML = seriesNames.map(s => `<option value="${VTeen.escapeHtml(s)}">`).join('');
+
+    document.getElementById('db-series').addEventListener('input', function () {
+        document.getElementById('db-slug').value = VTeen.slugify(this.value);
+    });
+
+    async function fetchInfo(videoId) {
+        try {
+            const res = await fetch(`https://noembed.com/embed?url=https://www.youtube.com/watch?v=${videoId}`);
+            const data = await res.json();
+            return {
+                videoId,
+                title: data.title || `Tập phim ${videoId}`,
+                poster: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
+                embed: `https://www.youtube.com/embed/${videoId}`
+            };
+        } catch (e) {
+            return {
+                videoId,
+                title: `Video ${videoId}`,
+                poster: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
+                embed: `https://www.youtube.com/embed/${videoId}`
+            };
+        }
+    }
+
+    document.getElementById('scan-btn').addEventListener('click', async () => {
+        const raw = document.getElementById('input-links').value.trim();
+        if (!raw) return alert('Vui lòng dán link YouTube!');
+
+        const ids = [];
+        const regexes = [
+            /(?:v=|youtu\.be\/|embed\/)([a-zA-Z0-9_-]{11})/g,
+            /"videoId":"([a-zA-Z0-9_-]{11})"/g
+        ];
+        for (const r of regexes) {
+            let m;
+            while ((m = r.exec(raw)) !== null) {
+                if (m[1] && !ids.includes(m[1])) ids.push(m[1]);
+            }
+        }
+        if (ids.length === 0 && /^[a-zA-Z0-9_-]{11}$/.test(raw)) {
+            ids.push(raw);
+        }
+
+        if (!ids.length) {
+            alert('Không tìm thấy ID video YouTube hợp lệ!');
+            return;
+        }
+
+        document.getElementById('res-count').textContent = `ĐANG QUÉT ${ids.length} VIDEO...`;
+        const tbody = document.getElementById('result-body');
+        tbody.innerHTML = '';
+        currentVideos = [];
+
+        for (let i = 0; i < ids.length; i++) {
+            const info = await fetchInfo(ids[i]);
+            currentVideos.push(info);
+            tbody.insertAdjacentHTML('beforeend', `
+                <tr>
+                    <td>${i + 1}</td>
+                    <td><img src="${VTeen.escapeHtml(info.poster)}" class="thumb-preview"></td>
+                    <td>${VTeen.escapeHtml(info.title)}</td>
+                    <td class="text-info">${VTeen.escapeHtml(info.embed)}</td>
+                </tr>
+            `);
+        }
+
+        document.getElementById('res-count').textContent = `ĐÃ TÌM THẤY: ${currentVideos.length} ID`;
+        document.getElementById('save-section').classList.remove('d-none');
+    });
+
+    document.getElementById('save-db-btn').addEventListener('click', async () => {
+        const seriesName = document.getElementById('db-series').value.trim();
+        const slug = document.getElementById('db-slug').value.trim() || VTeen.slugify(seriesName);
+        const server = parseInt(document.getElementById('db-server').value, 10) || 1;
+        const startEp = parseInt(document.getElementById('db-start-ep').value, 10) || 1;
+
+        if (!seriesName || !currentVideos.length) {
+            alert('Vui lòng nhập tên bộ phim!');
+            return;
+        }
+
+        const movies = await VTeen.db.getMovies();
+        let maxId = movies.reduce((acc, m) => Math.max(acc, parseInt(m.id, 10) || 0), 0);
+
+        currentVideos.forEach((item, idx) => {
+            const ep = startEp + idx;
+            const existing = movies.find(m => m.series_name === seriesName && (parseInt(m.episode, 10) || 1) === ep);
+            if (existing) {
+                if (server === 1) existing.embed_link = item.embed;
+                else existing.embed_link_2 = item.embed;
+                existing.title = item.title;
+            } else {
+                maxId += 1;
+                movies.push({
+                    id: maxId,
+                    title: item.title,
+                    episode: ep,
+                    total_episodes: currentVideos.length,
+                    embed_link: server === 1 ? item.embed : '',
+                    embed_link_2: server === 2 ? item.embed : '',
+                    poster: item.poster,
+                    type: 'series',
+                    series_name: seriesName,
+                    slug,
+                    description: '',
+                    added_at: new Date().toISOString().replace('T', ' ').slice(0, 19)
+                });
+            }
+        });
+
+        await VTeen.db.saveMovies(movies, `Add ${currentVideos.length} YouTube episodes to ${seriesName}`);
+        alert(`✅ Đã lưu thành công ${currentVideos.length} tập vào phim: ${seriesName}`);
+    });
+});
+</script>
+</body>
+</html>

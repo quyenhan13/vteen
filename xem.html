@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#050508">
+    <title>Xem phim - VTEEN</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/vteen-all.css">
+    <link rel="stylesheet" href="assets/css/player-watch.css">
+    <link rel="stylesheet" href="assets/css/universe-stream.css">
+</head>
+<body class="universe-stream-page">
+<header class="navbar">
+    <div class="nav-wrap">
+        <a href="index.html" class="logo">
+            <div class="logo-main">VTEEN UNIVERSE</div>
+            <div class="logo-sub">KHO PHIM TRUC TUYEN</div>
+        </a>
+        <nav class="menu" id="mainMenu"></nav>
+        <button class="mobile-menu-toggle" type="button" aria-label="Mo menu" aria-expanded="false" aria-controls="mainMenu">
+            <i class="fa fa-bars"></i>
+        </button>
+    </div>
+</header>
+
+<div class="tech-grid"></div>
+<div class="scanline"></div>
+<div class="particles" id="particles"></div>
+
+<div class="container main-container">
+    <div class="movie-header">
+        <h1 id="movieTitle">Đang tải phim...</h1>
+        <div class="meta-badges">
+            <span class="badge-v" id="epBadge">TẬP 1 / 1</span>
+            <span class="badge-f"><i class="fa-solid fa-bolt"></i> FULL HD</span>
+            <span class="badge-f"><i class="fa-solid fa-closed-captioning"></i> VIETSUB</span>
+        </div>
+    </div>
+
+    <div class="player-wrapper">
+        <div class="player-box">
+            <div class="iframe-container">
+                <iframe id="main-player" src="about:blank" allowfullscreen frameborder="0" scrolling="no" referrerpolicy="no-referrer" allow="autoplay; encrypted-media"></iframe>
+                <div id="player-loader">Vteen Yêu Em...</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="player-controls">
+        <div class="server-list" id="serverList">
+            <span class="label">SERVER:</span>
+        </div>
+        <div class="nav-btns">
+            <button class="btn-tool" id="copyLinkBtn"><i class="fa-solid fa-link"></i> COPY LINK</button>
+            <a href="phim.html" class="btn-tool"><i class="fa-solid fa-house"></i> KHO PHIM</a>
+        </div>
+    </div>
+
+    <div class="content-section">
+        <div class="section-title">DANH SÁCH TẬP PHIM</div>
+        <div class="ep-grid" id="ep-grid-secure">
+            <div class="loading-small">Vteen Yêu Em..</div>
+        </div>
+    </div>
+
+    <div class="content-section">
+        <div class="section-title">NỘI DUNG CHI TIẾT</div>
+        <div class="movie-desc" id="movieDesc">Đang tải nội dung...</div>
+    </div>
+
+    <div class="content-section" style="margin-bottom: 50px;">
+        <div class="section-title">PHIM GỢI Ý CHO BẠN</div>
+        <div class="related-grid" id="relatedGrid"></div>
+    </div>
+</div>
+
+<footer class="v-footer">
+    <div class="v-footer-inner">
+        <div class="v-footer-brand">
+            <div class="v-footer-logo">
+                VTEEN MOVIES
+                <span class="v-badge-pro">PRIVATE</span>
+            </div>
+            <p class="v-footer-desc">
+                Kho noi dung giai tri rieng tu, toi uu cho trai nghiem xem tren may tinh va dien thoai.
+            </p>
+        </div>
+        <nav class="v-footer-links">
+            <a href="index.html" class="v-footer-link"><i class="fa-solid fa-cloud-arrow-up"></i><span>Cap nhat</span></a>
+            <a href="phim.html" class="v-footer-link"><i class="fa-solid fa-film"></i><span>Kho phim</span></a>
+            <a href="admin/index.html" class="v-footer-link"><i class="fa-solid fa-user-shield"></i><span>Admin</span></a>
+        </nav>
+        <div class="v-copyright">&copy; 2026 <b>VTEEN MEDIA GROUP</b>. Van hanh boi <span class="v-neon">VTEEN</span>.</div>
+    </div>
+</footer>
+
+<script src="assets/js/vteen-core.js"></script>
+<script src="assets/js/universe-stream.js"></script>
+<script>
+(function () {
+    let SERVERS = {};
+
+    function switchServer(sv, isManual = false) {
+        const player = document.getElementById('main-player');
+        const loader = document.getElementById('player-loader');
+        const btn1 = document.getElementById('sv1');
+        const btn2 = document.getElementById('sv2');
+
+        if (btn1) btn1.classList.remove('active');
+        if (btn2) btn2.classList.remove('active');
+
+        const activeBtn = document.getElementById('sv' + sv);
+        if (activeBtn) activeBtn.classList.add('active');
+
+        if (isManual) {
+            localStorage.setItem('vteen_preferred_sv', String(sv));
+        }
+
+        loader.style.display = 'block';
+        player.style.opacity = '0';
+
+        const url = SERVERS[sv];
+        if (url) {
+            player.src = url;
+            player.onload = () => {
+                loader.style.display = 'none';
+                player.style.opacity = '1';
+            };
+        } else {
+            loader.textContent = '⚠️ Chưa có link phim trên server này.';
+        }
+    }
+
+    window.switchServer = switchServer;
+
+    async function initWatchPage() {
+        const params = new URLSearchParams(window.location.search);
+        const slug = (params.get('slug') || '').trim();
+        const requestedEp = parseInt(params.get('ep') || '0', 10);
+
+        if (!slug) {
+            window.location.replace('phim.html');
+            return;
+        }
+
+        const allMovies = await VTeen.db.getMovies();
+        const episodes = allMovies
+            .filter(m => String(m.slug || '') === slug)
+            .sort((a, b) => (parseInt(a.episode, 10) || 1) - (parseInt(b.episode, 10) || 1));
+
+        if (!episodes.length) {
+            window.location.replace('phim.html');
+            return;
+        }
+
+        let currentMovie = episodes.find(m => (parseInt(m.episode, 10) || 1) === requestedEp) || episodes[0];
+        const currentEpNum = parseInt(currentMovie.episode, 10) || 1;
+        const seriesName = currentMovie.series_name || currentMovie.title || 'Phim VTEEN';
+
+        document.title = `Xem phim ${seriesName} Tập ${currentEpNum} - VTEEN`;
+        document.getElementById('movieTitle').textContent = seriesName;
+        document.getElementById('epBadge').textContent = `TẬP ${currentEpNum} / ${episodes.length}`;
+        document.getElementById('movieDesc').textContent =
+            currentMovie.description || `Phim ${seriesName} đang được cập nhật thông tin chi tiết. Chúc bạn xem phim vui vẻ!`;
+
+        SERVERS = {};
+        if (currentMovie.embed_link) {
+            SERVERS[1] = `embed.html?url=${encodeURIComponent(currentMovie.embed_link)}`;
+        }
+        if (currentMovie.embed_link_2) {
+            SERVERS[2] = `embed.html?url=${encodeURIComponent(currentMovie.embed_link_2)}`;
+        }
+
+        const serverList = document.getElementById('serverList');
+        let svHtml = '<span class="label">SERVER:</span>';
+        if (SERVERS[1]) {
+            svHtml += `<div id="sv1" class="btn-sv active" onclick="switchServer(1, true)">SERVER VIP</div>`;
+        }
+        if (SERVERS[2]) {
+            svHtml += `<div id="sv2" class="btn-sv" onclick="switchServer(2, true)">SERVER 2</div>`;
+        }
+        serverList.innerHTML = svHtml;
+
+        const epGrid = document.getElementById('ep-grid-secure');
+        epGrid.innerHTML = episodes.map(ep => {
+            const num = parseInt(ep.episode, 10) || 1;
+            const active = num === currentEpNum ? 'active' : '';
+            return `<a href="xem.html?slug=${encodeURIComponent(slug)}&ep=${num}" class="ep-item ${active}">${num}</a>`;
+        }).join('');
+
+        const pref = localStorage.getItem('vteen_preferred_sv');
+        if (pref && SERVERS[pref]) {
+            switchServer(parseInt(pref, 10));
+        } else if (SERVERS[1]) {
+            switchServer(1);
+        } else if (SERVERS[2]) {
+            switchServer(2);
+        } else {
+            document.getElementById('player-loader').textContent = '⚠️ Chưa có link phim. Hãy thêm embed_link trong Admin.';
+        }
+
+        // Phim gợi ý (8 phim ngẫu nhiên khác)
+        const grouped = await VTeen.db.getGroupedMovies();
+        const others = grouped.filter(g => g.slug !== slug);
+        for (let i = others.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [others[i], others[j]] = [others[j], others[i]];
+        }
+        const related = others.slice(0, 8);
+        const fallbackPoster = VTeen.getFallbackPoster();
+        document.getElementById('relatedGrid').innerHTML = related.map(rel => `
+            <a href="xem.html?slug=${encodeURIComponent(rel.slug)}" class="related-card">
+                <div class="rel-poster">
+                    <img src="${VTeen.escapeHtml(VTeen.getPosterUrl(rel.poster))}" alt="Rel" onerror="this.onerror=null;this.src='${VTeen.escapeHtml(fallbackPoster)}';">
+                    <div class="rel-play"><i class="fa-solid fa-play"></i></div>
+                </div>
+                <div class="rel-title">${VTeen.escapeHtml(rel.display_name)}</div>
+            </a>
+        `).join('');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        initWatchPage();
+        const copyBtn = document.getElementById('copyLinkBtn');
+        if (copyBtn) {
+            copyBtn.addEventListener('click', () => {
+                navigator.clipboard.writeText(window.location.href);
+                alert('Đã sao chép link phim!');
+            });
+        }
+    });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#050508">
+    <title>VTEEN Movies - Trang chu</title>
+    <meta name="description" content="VTEEN - He thong chia se hinh anh va quan ly phim truc tuyen toc do cao.">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/vteen-all.css">
+    <link rel="stylesheet" href="assets/css/showcase-home.css">
+    <link rel="stylesheet" href="assets/css/universe-stream.css">
+    <style>
+        .gallery-tile.is-refreshing {
+            z-index: 20 !important;
+            overflow: visible !important;
+            outline: 0 !important;
+            animation: vteenTilePop 0.72s ease-in-out !important;
+        }
+        .gallery-tile.is-refreshing img {
+            animation: vteenImageSwap 0.72s ease-in-out !important;
+        }
+        .gallery-burst {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 30;
+            transform: translate(-50%, -50%) scale(0.2);
+            background: rgba(255, 255, 255, 0.96);
+            box-shadow:
+                0 0 24px rgba(255, 255, 255, 0.95),
+                0 0 58px rgba(223, 249, 255, 0.9),
+                0 0 120px rgba(123, 140, 255, 0.7),
+                0 0 180px rgba(255, 0, 200, 0.45);
+            animation: vteenBurstRing 0.9s ease-out forwards;
+        }
+        @keyframes vteenTilePop {
+            0% { transform: scale(1); filter: brightness(1); }
+            38% { transform: scale(1.045); filter: brightness(1.22) saturate(1.16); }
+            58% { transform: scale(0.985); filter: brightness(1.45) saturate(0.88); }
+            100% { transform: scale(1); filter: brightness(1) saturate(1); }
+        }
+        @keyframes vteenImageSwap {
+            0%, 42% { opacity: 1; transform: scale(1); }
+            52% { opacity: 0.18; transform: scale(1.08); }
+            62% { opacity: 0; transform: scale(0.96); }
+            74% { opacity: 1; transform: scale(1.04); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        @keyframes vteenBurstRing {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.2); }
+            22% { opacity: 1; transform: translate(-50%, -50%) scale(3); }
+            48% { opacity: 0.95; transform: translate(-50%, -50%) scale(9); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(16); }
+        }
+    </style>
+</head>
+<body class="universe-stream-page">
+<header class="navbar">
+    <div class="nav-wrap">
+        <a href="index.html" class="logo">
+            <div class="logo-main">VTEEN UNIVERSE</div>
+            <div class="logo-sub">KHO PHIM TRUC TUYEN</div>
+        </a>
+        <nav class="menu" id="mainMenu"></nav>
+        <button class="mobile-menu-toggle" type="button" aria-label="Mo menu" aria-expanded="false" aria-controls="mainMenu">
+            <i class="fa fa-bars"></i>
+        </button>
+    </div>
+</header>
+
+<div class="page-shell" id="homeShell">
+    <main class="showcase-page">
+        <section class="showcase-wrap">
+            <div class="cursor-glow" aria-hidden="true"></div>
+            <div class="showcase-hero">
+                <div class="hero-copy">
+                    <div class="upload-section">
+                        <section class="upload-panel-modern">
+                            <div class="upload-head">
+                                <div>
+                                    <h2>Dang anh va video</h2>
+                                    <p id="uploadSubtitle">Dang nhap de bat dau upload anh va video.</p>
+                                </div>
+                                <div class="upload-badge">Git Storage</div>
+                            </div>
+
+                            <div class="drop-zone-modern" id="dropZone">
+                                <div class="drop-content" id="dropContent">
+                                    <div class="upload-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+                                    <strong id="dropZoneText">Vui long dang nhap</strong>
+                                    <p>Ho tro JPG, PNG, GIF, WEBP, MP4, MOV, WEBM</p>
+                                    <div id="uploadActionSlot">
+                                        <a class="upload-login-link" href="login.html">Dang nhap</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="result-box-modern" id="resultBox">
+                            <h3>Link chia se</h3>
+                            <p>Link se xuat hien tai day ngay sau khi upload thanh cong.</p>
+                            <div class="result-field">
+                                <input type="text" id="shareLink" readonly placeholder="Chua co link">
+                                <button type="button" id="copyButton">Sao chep</button>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+
+                <div class="gallery-stage">
+                    <div class="gallery-wall" id="galleryWall" data-gallery-playlist="true"></div>
+                </div>
+            </div>
+
+            <div class="showcase-footer">
+                <div>Trang chu toi uu cho desktop va mobile, anh xoay tu dong va dung lai khi di chuot vao.</div>
+                <div class="ticker">
+                    <span>Xem nhanh</span>
+                    <span>Hinh noi bat</span>
+                    <span>De su dung</span>
+                    <span>Git Native</span>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+
+<footer class="v-footer">
+    <div class="v-footer-inner">
+        <div class="v-footer-brand">
+            <div class="v-footer-logo">
+                VTEEN MOVIES
+                <span class="v-badge-pro">PRIVATE</span>
+            </div>
+            <p class="v-footer-desc">
+                Kho noi dung giai tri rieng tu, toi uu cho trai nghiem xem tren may tinh va dien thoai.
+            </p>
+        </div>
+        <nav class="v-footer-links" aria-label="Footer navigation">
+            <a href="index.html" class="v-footer-link">
+                <i class="fa-solid fa-cloud-arrow-up"></i>
+                <span>Cap nhat</span>
+            </a>
+            <a href="phim.html" class="v-footer-link">
+                <i class="fa-solid fa-film"></i>
+                <span>Kho phim</span>
+            </a>
+            <a href="admin/index.html" class="v-footer-link">
+                <i class="fa-solid fa-user-shield"></i>
+                <span>Admin</span>
+            </a>
+        </nav>
+        <div class="v-copyright">
+            &copy; 2026 <b>VTEEN MEDIA GROUP</b>. Van hanh boi <span class="v-neon">VTEEN</span>.
+        </div>
+    </div>
+</footer>
+
+<script src="assets/js/vteen-core.js"></script>
+<script src="assets/js/universe-stream.js"></script>
+<script src="assets/js/global.js" defer></script>
+<script>
+(function () {
+    const params = new URLSearchParams(window.location.search);
+    if (params.has('logout')) {
+        VTeen.auth.logout();
+        window.location.replace('index.html');
+        return;
+    }
+    if (params.has('login')) {
+        window.location.replace('login.html');
+        return;
+    }
+
+    function fingerprint(src, title) {
+        let clean = String(src || title || '').toLowerCase();
+        clean = clean.split('?')[0].split('#')[0];
+        clean = clean.substring(clean.lastIndexOf('/') + 1);
+        clean = clean.replace(/\.[a-z0-9]+$/i, '');
+        clean = clean.replace(/[-_ ]?\(?\d+\)?$/g, '');
+        return clean.replace(/[^a-z0-9]+/g, '');
+    }
+
+    function shortenName(name, limit = 28) {
+        const s = String(name || '');
+        if (s.length <= limit) return s;
+        return s.slice(0, 18) + '...' + s.slice(-7);
+    }
+
+    let playlist = [];
+
+    async function loadGallery() {
+        const [images, posters] = await Promise.all([
+            VTeen.db.getImages(),
+            VTeen.db.getPosters()
+        ]);
+
+        const rawList = [];
+        const sortedImages = [...images].sort((a, b) => (b.id || 0) - (a.id || 0));
+        for (const item of sortedImages) {
+            const path = String(item.file_path || '');
+            const ext = path.split('.').pop().toLowerCase();
+            if (path && !['mp4', 'mov', 'webm'].includes(ext)) {
+                rawList.push({
+                    src: VTeen.url(path),
+                    title: item.original_name || 'Upload',
+                    href: item.short_code ? `p.html?code=${encodeURIComponent(item.short_code)}` : 'phim.html'
+                });
+            }
+        }
+
+        const seen = new Set();
+        playlist = rawList.filter(item => {
+            const key = fingerprint(item.src, item.title) || item.src;
+            if (seen.has(key)) return false;
+            seen.add(key);
+            return true;
+        });
+
+        for (const poster of posters) {
+            if (playlist.length >= 24) break;
+            const src = VTeen.url(poster);
+            if (!playlist.some(p => p.src === src)) {
+                playlist.push({
+                    src,
+                    title: 'VTEEN',
+                    href: 'phim.html'
+                });
+            }
+        }
+
+        const wall = document.getElementById('galleryWall');
+        if (!wall) return;
+
+        const initial = playlist.slice(0, 9);
+        wall.innerHTML = initial.map((img, idx) => {
+            const large = [0, 4, 9].includes(idx) ? 'large' : 'normal';
+            return `
+                <a class="gallery-tile gallery-tile--${large}" data-title="${VTeen.escapeHtml(shortenName(img.title))}" href="${VTeen.escapeHtml(img.href)}">
+                    <img src="${VTeen.escapeHtml(img.src)}" alt="${VTeen.escapeHtml(img.title)}" loading="lazy">
+                </a>
+            `;
+        }).join('');
+
+        startBurstRotation(wall);
+    }
+
+    function startBurstRotation(wall) {
+        const tiles = wall.getElementsByClassName('gallery-tile');
+        if (!tiles.length || playlist.length <= tiles.length) return;
+
+        let current = 0;
+        setInterval(() => {
+            const tile = tiles[current % tiles.length];
+            const visibleSrcs = new Set(
+                Array.from(tiles).map(t => t.querySelector('img')?.getAttribute('src'))
+            );
+            const candidates = playlist.filter(item => !visibleSrcs.has(item.src));
+            if (!candidates.length) return;
+
+            const nextImage = candidates[Math.floor(Math.random() * candidates.length)];
+            if (tile && nextImage) {
+                tile.classList.remove('is-refreshing');
+                void tile.offsetWidth;
+                tile.classList.add('is-refreshing');
+
+                setTimeout(() => {
+                    const img = tile.querySelector('img');
+                    if (img) {
+                        img.setAttribute('src', nextImage.src);
+                        img.setAttribute('alt', nextImage.title || '');
+                    }
+                    tile.setAttribute('data-title', shortenName(nextImage.title || ''));
+                    tile.setAttribute('href', nextImage.href || 'phim.html');
+                }, 420);
+
+                setTimeout(() => {
+                    tile.classList.remove('is-refreshing');
+                }, 950);
+            }
+            current += 1;
+        }, 1200);
+    }
+
+    function setupUploadUI() {
+        const isAuth = VTeen.auth.isLoggedIn();
+        const subtitle = document.getElementById('uploadSubtitle');
+        const dropText = document.getElementById('dropZoneText');
+        const slot = document.getElementById('uploadActionSlot');
+        const dropZone = document.getElementById('dropZone');
+        const resultBox = document.getElementById('resultBox');
+        const shareLink = document.getElementById('shareLink');
+        const copyButton = document.getElementById('copyButton');
+
+        if (isAuth) {
+            subtitle.textContent = 'Keo tha file de len song trong showcase va tao link chia se nhanh.';
+            dropText.textContent = 'Chon hoac keo tha file';
+            slot.innerHTML = `
+                <button type="button" id="chooseFileBtn">Chon file</button>
+                <input type="file" id="fileInput" hidden accept="image/*,video/mp4,video/webm,video/quicktime">
+            `;
+
+            const fileInput = document.getElementById('fileInput');
+            dropZone.addEventListener('click', () => fileInput.click());
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files[0]) handleFileUpload(e.target.files[0]);
+                fileInput.value = '';
+            });
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.classList.add('dragover');
+            });
+            dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('dragover');
+                if (e.dataTransfer.files[0]) handleFileUpload(e.dataTransfer.files[0]);
+            });
+        }
+
+        if (copyButton && shareLink) {
+            copyButton.addEventListener('click', async () => {
+                if (!shareLink.value) return;
+                const orig = copyButton.textContent;
+                try {
+                    await navigator.clipboard.writeText(shareLink.value);
+                } catch (e) {
+                    shareLink.select();
+                    document.execCommand('copy');
+                }
+                copyButton.textContent = 'Da sao chep';
+                setTimeout(() => { copyButton.textContent = orig; }, 1800);
+            });
+        }
+
+        async function handleFileUpload(file) {
+            const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+            const allowedExt = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'mp4', 'mov', 'webm'];
+            if (!allowedExt.includes(ext)) {
+                alert('Dinh dang file khong duoc ho tro.');
+                return;
+            }
+
+            dropZone.classList.add('uploading');
+            dropText.textContent = 'Dang tai len...';
+
+            try {
+                const code = Array.from(crypto.getRandomValues(new Uint8Array(3)))
+                    .map(b => b.toString(16).padStart(2, '0')).join('');
+                const now = new Date();
+                const year = now.getFullYear();
+                const month = String(now.getMonth() + 1).padStart(2, '0');
+                const fileName = `img_${code}${Date.now().toString(16).slice(-2)}.${ext}`;
+                const relPath = `uploads/${year}/${month}/${fileName}`;
+
+                let finalPath = relPath;
+                if (VTeen.github.isConfigured()) {
+                    await VTeen.github.uploadFile(relPath, file, `Upload ${file.name} via VTEEN`);
+                } else if (file.size <= 3 * 1024 * 1024) {
+                    finalPath = await new Promise((resolve) => {
+                        const reader = new FileReader();
+                        reader.onload = () => resolve(reader.result);
+                        reader.readAsDataURL(file);
+                    });
+                } else {
+                    alert('De upload file lon len GitHub, vui long cau hinh GitHub Token trong Admin Panel!');
+                    dropZone.classList.remove('uploading');
+                    dropText.textContent = 'Chon hoac keo tha file';
+                    return;
+                }
+
+                const images = await VTeen.db.getImages();
+                const nextId = images.reduce((m, i) => Math.max(m, i.id || 0), 0) + 1;
+                const newEntry = {
+                    id: nextId,
+                    short_code: code,
+                    file_path: finalPath,
+                    original_name: file.name,
+                    file_size: file.size,
+                    uploaded_at: now.toISOString().replace('T', ' ').slice(0, 19)
+                };
+                images.unshift(newEntry);
+                await VTeen.db.saveImages(images, `Add upload entry ${code}`);
+
+                const fullShareUrl = new URL(`p.html?code=${code}`, window.location.href).href;
+                if (resultBox) resultBox.classList.add('is-visible');
+                if (shareLink) shareLink.value = fullShareUrl;
+
+                playlist.unshift({
+                    src: VTeen.url(finalPath),
+                    title: file.name,
+                    href: `p.html?code=${code}`
+                });
+            } catch (err) {
+                alert('Loi khi upload: ' + err.message);
+            } finally {
+                dropZone.classList.remove('uploading');
+                dropText.textContent = 'Chon hoac keo tha file';
+            }
+        }
+    }
+
+    function initShowcaseEffects() {
+        const page = document.querySelector('.showcase-page');
+        const stage = document.querySelector('.gallery-stage');
+        if (!page || !stage || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+        page.addEventListener('pointermove', (e) => {
+            const r = page.getBoundingClientRect();
+            page.style.setProperty('--glow-x', `${((e.clientX - r.left) / r.width) * 100}%`);
+            page.style.setProperty('--glow-y', `${((e.clientY - r.top) / r.height) * 100}%`);
+        });
+
+        const wall = stage.querySelector('.gallery-wall');
+        if (wall) {
+            stage.addEventListener('pointermove', (e) => {
+                const r = stage.getBoundingClientRect();
+                const y = (e.clientY - r.top - r.height / 2) / r.height;
+                wall.style.setProperty('--wall-shift', `${(y * -10).toFixed(2)}px`);
+            });
+            stage.addEventListener('pointerleave', () => {
+                wall.style.setProperty('--wall-shift', '0px');
+            });
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        setupUploadUI();
+        loadGallery();
+        initShowcaseEffects();
+    });
+})();
+</script>
+</body>
+</html>

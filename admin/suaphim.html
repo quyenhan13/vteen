@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#050508">
+    <title>Quản lý Bộ phim - VTEEN Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../assets/css/vteen-all.css">
+    <link rel="stylesheet" href="../assets/css/admin.css">
+    <link rel="stylesheet" href="../assets/css/admin-tools.css">
+    <link rel="stylesheet" href="../assets/css/universe-stream.css">
+</head>
+<body class="universe-stream-page admin-movies-page">
+<header class="navbar">
+    <div class="nav-wrap">
+        <a href="../index.html" class="logo">
+            <div class="logo-main">VTEEN UNIVERSE</div>
+            <div class="logo-sub">KHO PHIM TRUC TUYEN</div>
+        </a>
+        <nav class="menu" id="mainMenu"></nav>
+        <button class="mobile-menu-toggle" type="button" aria-label="Mo menu" aria-expanded="false" aria-controls="mainMenu">
+            <i class="fa fa-bars"></i>
+        </button>
+    </div>
+</header>
+
+<div class="particles" id="particles"></div>
+
+<main class="admin-phim-page">
+    <section class="admin-compact-header">
+        <div class="admin-header-left">
+            <div class="admin-badge">
+                <i class="fa-solid fa-user-shield"></i>
+                ADMIN PANEL
+            </div>
+            <h1>Quản lý Bộ phim</h1>
+            <p class="admin-subtitle">
+                Chọn một bộ phim để sửa thông tin, thêm tập, thay link hoặc quản lý danh sách tập.
+            </p>
+            <div class="stats-mini">
+                <div class="stat-tag">SERIES <span id="seriesCount">0</span></div>
+                <div class="stat-tag">EPISODES <span id="episodesCount">0</span></div>
+                <div class="stat-tag">STATUS <span>ONLINE</span></div>
+            </div>
+        </div>
+
+        <div class="admin-header-right">
+            <form id="adminSearchForm" class="search-bar-pro-admin">
+                <input type="text" id="adminSearchInput" placeholder="Tìm tên bộ phim..." autocomplete="off">
+                <button type="submit" aria-label="Tìm kiếm">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </button>
+            </form>
+
+            <a href="index.html" class="cyber-action home" title="Admin Home">
+                <i class="fa-solid fa-house"></i>
+            </a>
+
+            <a href="../phim.html" class="cyber-action" title="Xem trang phim">
+                <i class="fa-solid fa-film"></i>
+                <span>Trang phim</span>
+            </a>
+        </div>
+    </section>
+
+    <section class="admin-movie-section">
+        <div class="admin-section-head">
+            <h2 class="admin-section-title">Danh sách phim</h2>
+            <div class="admin-section-note" id="sectionNote">Hiển thị toàn bộ kho phim</div>
+        </div>
+
+        <div class="admin-movie-grid" id="adminMovieGrid"></div>
+    </section>
+</main>
+
+<footer class="v-footer">
+    <div class="v-footer-inner">
+        <div class="v-footer-brand">
+            <div class="v-footer-logo">VTEEN MOVIES <span class="v-badge-pro">PRIVATE</span></div>
+            <p class="v-footer-desc">Kho noi dung giai tri rieng tu, toi uu cho trai nghiem xem tren may tinh va dien thoai.</p>
+        </div>
+        <nav class="v-footer-links">
+            <a href="../index.html" class="v-footer-link"><i class="fa-solid fa-cloud-arrow-up"></i><span>Cap nhat</span></a>
+            <a href="../phim.html" class="v-footer-link"><i class="fa-solid fa-film"></i><span>Kho phim</span></a>
+            <a href="index.html" class="v-footer-link"><i class="fa-solid fa-user-shield"></i><span>Admin</span></a>
+        </nav>
+        <div class="v-copyright">&copy; 2026 <b>VTEEN MEDIA GROUP</b>. Van hanh boi <span class="v-neon">VTEEN</span>.</div>
+    </div>
+</footer>
+
+<script src="../assets/js/vteen-core.js"></script>
+<script src="../assets/js/universe-stream.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+    if (!VTeen.auth.isAdmin()) {
+        window.location.replace('index.html');
+        return;
+    }
+
+    const searchInput = document.getElementById('adminSearchInput');
+    const searchForm = document.getElementById('adminSearchForm');
+    const grid = document.getElementById('adminMovieGrid');
+    const seriesCountEl = document.getElementById('seriesCount');
+    const episodesCountEl = document.getElementById('episodesCount');
+    const sectionNote = document.getElementById('sectionNote');
+    const fallbackPoster = VTeen.getFallbackPoster();
+
+    async function renderList(q = '') {
+        const all = await VTeen.db.getMovies();
+        const query = String(q || '').trim().toLowerCase();
+        const groups = new Map();
+
+        for (const row of all) {
+            const title = String(row.title || '');
+            const sName = String(row.series_name || '').trim() || 'Phim lẻ';
+            if (query && !sName.toLowerCase().includes(query) && !title.toLowerCase().includes(query)) {
+                continue;
+            }
+            const ep = parseInt(row.episode, 10) || 1;
+            const g = groups.get(sName);
+            if (!g) {
+                groups.set(sName, {
+                    series_name: sName,
+                    count: 1,
+                    poster: row.poster || '',
+                    latest_ep: ep
+                });
+            } else {
+                g.count += 1;
+                if (ep > g.latest_ep) g.latest_ep = ep;
+                if (!g.poster && row.poster) g.poster = row.poster;
+            }
+        }
+
+        const list = Array.from(groups.values()).sort((a, b) =>
+            a.series_name.localeCompare(b.series_name, 'vi')
+        );
+
+        seriesCountEl.textContent = list.length;
+        episodesCountEl.textContent = list.reduce((acc, item) => acc + item.count, 0);
+        sectionNote.textContent = query ? `Đang lọc kết quả cho: "${q}"` : 'Hiển thị toàn bộ kho phim';
+
+        if (!list.length) {
+            grid.innerHTML = `
+                <div class="empty-movie-admin">
+                    <i class="fa-solid fa-face-frown"></i>
+                    <h3>Không tìm thấy phim</h3>
+                    <p>Không có bộ phim nào phù hợp với từ khóa của bạn.</p>
+                </div>
+            `;
+            return;
+        }
+
+        grid.innerHTML = list.map(m => {
+            const name = VTeen.escapeHtml(m.series_name);
+            const posterUrl = VTeen.escapeHtml(VTeen.getPosterUrl(m.poster));
+            const epCount = m.count;
+            const latestEp = m.latest_ep;
+
+            return `
+                <a href="suaphim_detail.html?series=${encodeURIComponent(m.series_name)}" class="admin-movie-card">
+                    <div class="admin-poster">
+                        <div class="admin-tag-type">${epCount > 1 ? 'SERIES' : 'MOVIE'}</div>
+                        <div class="admin-tag-ep">${epCount} TẬP</div>
+                        <img
+                            src="${posterUrl}"
+                            alt="${name}"
+                            loading="lazy"
+                            onload="this.classList.add('loaded');"
+                            onerror="this.onerror=null; this.src='${VTeen.escapeHtml(fallbackPoster)}'; this.classList.add('loaded');"
+                        >
+                        <div class="admin-edit-float">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </div>
+                    </div>
+                    <div class="admin-info">
+                        <div class="admin-title">${name}</div>
+                        <div class="admin-ep-count">${epCount} tập phim${latestEp > 0 ? ' · mới nhất tập ' + latestEp : ''}</div>
+                    </div>
+                </a>
+            `;
+        }).join('');
+    }
+
+    await renderList('');
+    searchForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        renderList(searchInput.value);
+    });
+    searchInput.addEventListener('input', () => renderList(searchInput.value));
+});
+</script>
+</body>
+</html>

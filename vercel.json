@@ -1,0 +1,19 @@
+{
+  "cleanUrls": true,
+  "rewrites": [
+    { "source": "/xem/:slug/:ep", "destination": "/xem.html?slug=:slug&ep=:ep" },
+    { "source": "/xem/:slug", "destination": "/xem.html?slug=:slug" },
+    { "source": "/p/:code", "destination": "/p.html?code=:code" },
+    { "source": "/index.php", "destination": "/index.html" },
+    { "source": "/phim.php", "destination": "/phim.html" },
+    { "source": "/xem.php", "destination": "/xem.html" },
+    { "source": "/embed.php", "destination": "/embed.html" },
+    { "source": "/login.php", "destination": "/login.html" },
+    { "source": "/p.php", "destination": "/p.html" },
+    { "source": "/admin/index.php", "destination": "/admin/index.html" },
+    { "source": "/admin/suaphim.php", "destination": "/admin/suaphim.html" },
+    { "source": "/admin/suaphim", "destination": "/admin/suaphim.html" },
+    { "source": "/admin/suaphim_detail.php", "destination": "/admin/suaphim_detail.html" },
+    { "source": "/admin/vippro.php", "destination": "/admin/vippro.html" }
+  ]
+}

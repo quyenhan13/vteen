@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#050508">
+    <title>VIP Upload - VTEEN Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../assets/css/vteen-all.css">
+    <link rel="stylesheet" href="../assets/css/admin.css">
+    <link rel="stylesheet" href="../assets/css/universe-stream.css">
+</head>
+<body class="universe-stream-page">
+<header class="navbar">
+    <div class="nav-wrap">
+        <a href="../index.html" class="logo">
+            <div class="logo-main">VTEEN UNIVERSE</div>
+            <div class="logo-sub">KHO PHIM TRUC TUYEN</div>
+        </a>
+        <nav class="menu" id="mainMenu"></nav>
+        <button class="mobile-menu-toggle" type="button" aria-label="Mo menu" aria-expanded="false" aria-controls="mainMenu">
+            <i class="fa fa-bars"></i>
+        </button>
+    </div>
+</header>
+
+<div class="particles" id="particles"></div>
+
+<div class="container">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin:28px 0 36px;flex-wrap:wrap;gap:12px;">
+        <h1 style="margin:0;">🚀 QUẢN TRỊ VIÊN VIP</h1>
+        <a href="index.html" class="btn-logout">← Dashboard</a>
+    </div>
+
+    <div class="tabs-header">
+        <div class="tab-btn active" onclick="openTab(event, 't1')">🆕 PHIM CHƯA CÓ</div>
+        <div class="tab-btn" onclick="openTab(event, 't2')">🔄 PHIM ĐÃ CÓ</div>
+    </div>
+
+    <!-- TAB 1: THÊM PHIM MỚI -->
+    <div id="t1" class="tab-content active">
+        <form id="addNewMovieForm" class="cyber-form">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Tên Phim Gốc</label>
+                    <input type="text" id="titleBase" placeholder="VD: Tây Du Ký" required>
+                </div>
+                <div class="form-group">
+                    <label>Loại Phim</label>
+                    <select id="movieType">
+                        <option value="series">Phim Bộ</option>
+                        <option value="single">Phim Lẻ</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Ảnh Bìa (Chọn file hoặc dán URL)</label>
+                <input type="file" id="posterFile" accept="image/*" style="margin-bottom:8px;">
+                <input type="text" id="posterUrl" placeholder="Hoặc dán link ảnh poster https://...">
+            </div>
+
+            <div class="form-group">
+                <label>Dán Danh Sách Link (Tự động lọc URL, Drive, Dailymotion)</label>
+                <textarea id="embedLinks" placeholder="Dán mã HTML hoặc danh sách link vào đây..." style="height:150px;" required></textarea>
+            </div>
+
+            <button type="submit" class="cyber-btn" id="addSubmitBtn">🚀 TRIỂN KHAI THÊM PHIM</button>
+        </form>
+    </div>
+
+    <!-- TAB 2: CẬP NHẬT PHIM ĐÃ CÓ -->
+    <div id="t2" class="tab-content">
+        <form id="updateBatchForm" class="cyber-form">
+            <div class="form-group">
+                <label>Chọn Bộ Phim</label>
+                <select id="existingSeriesSelect" required>
+                    <option value="">-- Chọn phim cần cập nhật --</option>
+                </select>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Link Server 1 (Hàng loạt)</label>
+                    <textarea id="linksSv1" placeholder="Dán link SV1..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Link Server 2 (Hàng loạt)</label>
+                    <textarea id="linksSv2" placeholder="Dán link SV2..."></textarea>
+                </div>
+            </div>
+
+            <button type="submit" class="cyber-btn alt">🔄 CẬP NHẬT SERVER</button>
+        </form>
+    </div>
+
+    <div id="msgFloat" class="msg-float" style="display:none;"></div>
+</div>
+
+<footer class="v-footer">
+    <div class="v-footer-inner">
+        <div class="v-footer-brand">
+            <div class="v-footer-logo">VTEEN MOVIES <span class="v-badge-pro">PRIVATE</span></div>
+            <p class="v-footer-desc">Kho noi dung giai tri rieng tu, toi uu cho trai nghiem xem tren may tinh va dien thoai.</p>
+        </div>
+        <nav class="v-footer-links">
+            <a href="../index.html" class="v-footer-link"><i class="fa-solid fa-cloud-arrow-up"></i><span>Cap nhat</span></a>
+            <a href="../phim.html" class="v-footer-link"><i class="fa-solid fa-film"></i><span>Kho phim</span></a>
+            <a href="index.html" class="v-footer-link"><i class="fa-solid fa-user-shield"></i><span>Admin</span></a>
+        </nav>
+        <div class="v-copyright">&copy; 2026 <b>VTEEN MEDIA GROUP</b>. Van hanh boi <span class="v-neon">VTEEN</span>.</div>
+    </div>
+</footer>
+
+<script src="../assets/js/vteen-core.js"></script>
+<script src="../assets/js/universe-stream.js"></script>
+<script>
+function openTab(evt, tabName) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+    document.getElementById(tabName).classList.add('active');
+    evt.currentTarget.classList.add('active');
+}
+
+function showMsg(text) {
+    const el = document.getElementById('msgFloat');
+    el.textContent = text;
+    el.style.display = 'block';
+    setTimeout(() => { el.style.display = 'none'; }, 4000);
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+    if (!VTeen.auth.isAdmin()) {
+        window.location.replace('index.html');
+        return;
+    }
+
+    async function populateSeriesSelect() {
+        const all = await VTeen.db.getMovies();
+        const names = [...new Set(all.map(m => String(m.series_name || '').trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'vi'));
+        const sel = document.getElementById('existingSeriesSelect');
+        sel.innerHTML = '<option value="">-- Chọn phim cần cập nhật --</option>' +
+            names.map(s => `<option value="${VTeen.escapeHtml(s)}">${VTeen.escapeHtml(s)}</option>`).join('');
+    }
+
+    await populateSeriesSelect();
+
+    document.getElementById('addNewMovieForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const titleBase = document.getElementById('titleBase').value.trim();
+        const type = document.getElementById('movieType').value;
+        const embedText = document.getElementById('embedLinks').value.trim();
+        const file = document.getElementById('posterFile').files[0];
+        let posterPath = document.getElementById('posterUrl').value.trim();
+
+        let links = VTeen.processAndCleanLinks(embedText);
+        if (type === 'single' && links.length > 0) links = [links[0]];
+
+        if (!titleBase || !links.length) {
+            showMsg('❌ Vui lòng nhập tên phim và ít nhất 1 link hợp lệ!');
+            return;
+        }
+
+        const btn = document.getElementById('addSubmitBtn');
+        btn.disabled = true;
+        btn.textContent = '⏳ ĐANG XỬ LÝ...';
+
+        try {
+            if (file) {
+                const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+                const newName = `p_${ Math.floor(Date.now() / 1000) }_${ Math.random().toString(16).slice(2, 10) }.${ext}`;
+                const rel = `uploads/posters/${newName}`;
+                if (VTeen.github.isConfigured()) {
+                    await VTeen.github.uploadFile(rel, file, `Upload poster for ${titleBase}`);
+                    posterPath = rel;
+                } else {
+                    posterPath = await new Promise(resolve => {
+                        const r = new FileReader();
+                        r.onload = () => resolve(r.result);
+                        r.readAsDataURL(file);
+                    });
+                }
+            }
+
+            const allMovies = await VTeen.db.getMovies();
+            let maxId = allMovies.reduce((acc, m) => Math.max(acc, parseInt(m.id, 10) || 0), 0);
+            const slug = VTeen.slugify(titleBase);
+            const now = new Date().toISOString().replace('T', ' ').slice(0, 19);
+
+            links.forEach((link, idx) => {
+                maxId += 1;
+                const ep = type === 'single' ? 1 : (idx + 1);
+                let title = type === 'single' ? titleBase : `${titleBase} - Tập ${ep}`;
+                if (title.length > 100) title = title.slice(0, 95) + '...';
+
+                allMovies.push({
+                    id: maxId,
+                    title,
+                    episode: ep,
+                    total_episodes: links.length,
+                    embed_link: link,
+                    embed_link_2: '',
+                    poster: posterPath,
+                    type,
+                    series_name: titleBase,
+                    slug,
+                    description: '',
+                    added_at: now
+                });
+            });
+
+            await VTeen.db.saveMovies(allMovies, `Add new movie ${titleBase} (${links.length} eps)`);
+            await populateSeriesSelect();
+            e.target.reset();
+            showMsg(`✅ Thành công! Đã thêm ${links.length} tập phim.`);
+        } catch (err) {
+            showMsg('❌ Lỗi: ' + err.message);
+        } finally {
+            btn.disabled = false;
+            btn.textContent = '🚀 TRIỂN KHAI THÊM PHIM';
+        }
+    });
+
+    document.getElementById('updateBatchForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const seriesName = document.getElementById('existingSeriesSelect').value;
+        const links1 = VTeen.processAndCleanLinks(document.getElementById('linksSv1').value);
+        const links2 = VTeen.processAndCleanLinks(document.getElementById('linksSv2').value);
+        const max = Math.max(links1.length, links2.length);
+
+        if (!seriesName || max === 0) {
+            showMsg('❌ Vui lòng chọn bộ phim và dán danh sách link!');
+            return;
+        }
+
+        const allMovies = await VTeen.db.getMovies();
+        const sample = allMovies.find(m => m.series_name === seriesName) || {};
+        const slug = sample.slug || VTeen.slugify(seriesName);
+        let maxId = allMovies.reduce((acc, m) => Math.max(acc, parseInt(m.id, 10) || 0), 0);
+        let up = 0, add = 0;
+
+        for (let i = 0; i < max; i++) {
+            const ep = i + 1;
+            const l1 = links1[i] || '';
+            const l2 = links2[i] || '';
+            const existing = allMovies.find(m => m.series_name === seriesName && (parseInt(m.episode, 10) || 1) === ep);
+            if (existing) {
+                if (l1) existing.embed_link = l1;
+                if (l2) existing.embed_link_2 = l2;
+                up++;
+            } else {
+                maxId += 1;
+                allMovies.push({
+                    id: maxId,
+                    title: `Tập ${ep}`,
+                    episode: ep,
+                    total_episodes: 1,
+                    embed_link: l1,
+                    embed_link_2: l2,
+                    poster: sample.poster || '',
+                    type: 'series',
+                    series_name: seriesName,
+                    slug,
+                    description: sample.description || '',
+                    added_at: new Date().toISOString().replace('T', ' ').slice(0, 19)
+                });
+                add++;
+            }
+        }
+
+        await VTeen.db.saveMovies(allMovies, `Batch update ${seriesName}`);
+        showMsg(`✅ Xong! (Thêm: ${add} | Cập nhật: ${up})`);
+    });
+});
+</script>
+</body>
+</html>
