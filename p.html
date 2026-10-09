@@ -99,7 +99,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
-    const rawName = file.original_name || file.name || '';
+    const rawName = file.original_name || file.file_name || file.name || '';
     const name = (rawName && !rawName.includes('???'))
         ? rawName
         : `File ${code.toUpperCase()}`;
@@ -107,17 +107,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('fileTitle').textContent = name;
 
     const src = file.file_path ? VTeen.url(file.file_path) : '';
+    const cleanDriveId = VTeen.sanitizeDriveId(file.drive_id);
     const ext = (String(file.file_path || name).split('.').pop() || '').toLowerCase();
     const isVideo = ['mp4', 'webm', 'mov'].includes(ext) || String(file.mime_type || '').includes('video');
 
     const mediaBox = document.getElementById('mediaBox');
-    if (!src && file.drive_id) {
+    if (!src && cleanDriveId) {
         mediaBox.innerHTML = `
             <div class="player-wrapper" style="aspect-ratio:16/9;">
-                <iframe src="https://drive.google.com/file/d/${encodeURIComponent(file.drive_id)}/preview" style="width:100%;height:100%;border:0;border-radius:16px;" allowfullscreen></iframe>
+                <iframe src="https://drive.google.com/file/d/${encodeURIComponent(cleanDriveId)}/preview" style="width:100%;height:100%;border:0;border-radius:16px;" allowfullscreen></iframe>
             </div>
         `;
-    } else if (isVideo) {
+    } else if (isVideo && src) {
         const mime = ext === 'webm' ? 'video/webm' : (ext === 'mov' ? 'video/quicktime' : 'video/mp4');
         mediaBox.innerHTML = `
             <div class="player-wrapper">
@@ -127,7 +128,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 </video>
             </div>
         `;
-    } else {
+    } else if (src) {
         mediaBox.innerHTML = `
             <div class="image-wrapper">
                 <img src="${VTeen.escapeHtml(src)}" alt="${VTeen.escapeHtml(name)}" loading="eager" decoding="async">

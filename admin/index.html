@@ -208,6 +208,45 @@
         </div>
         <div id="ghMsg" style="margin-top:12px;font-size:13px;font-weight:700;color:#34d399;display:none;"></div>
     </div>
+
+    <div class="git-config-panel" style="border-color: rgba(16, 185, 129, 0.35);">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+            <div>
+                <h3 style="margin:0;font-size:18px;color:#fff;"><i class="fa-brands fa-google-drive" style="color:#10b981;"></i> Cấu hình Google Drive 15 GB Thật (drive1)</h3>
+                <p style="margin:4px 0 0;font-size:13px;color:#94a3b8;">Kết nối tài khoản Google Drive 15 GB của Đại ca để đồng bộ dung lượng thật và đẩy file upload thẳng vào Google Drive.</p>
+            </div>
+            <span id="gdStatusBadge" class="git-status-badge local">Chưa kết nối</span>
+        </div>
+
+        <div class="git-config-grid">
+            <div style="grid-column: 1 / -1;">
+                <label>Google Apps Script Web App URL (Khuyên dùng - Miễn phí, không lộ khóa)</label>
+                <input type="url" id="adminGdScriptUrl" placeholder="https://script.google.com/macros/s/.../exec">
+            </div>
+            <div>
+                <label>OAuth Client ID (Tùy chọn)</label>
+                <input type="text" id="adminGdClientId" placeholder="xxxx.apps.googleusercontent.com">
+            </div>
+            <div>
+                <label>OAuth Client Secret (Tùy chọn)</label>
+                <input type="password" id="adminGdClientSecret" placeholder="GOCSPX-...">
+            </div>
+            <div>
+                <label>OAuth Refresh Token (Tùy chọn)</label>
+                <input type="password" id="adminGdRefreshToken" placeholder="1//04...">
+            </div>
+            <div>
+                <label>Drive Folder ID (Tùy chọn)</label>
+                <input type="text" id="adminGdFolderId" placeholder="Để trống = tự tạo VTEEN_DRIVE">
+            </div>
+        </div>
+
+        <div class="git-actions">
+            <button type="button" class="git-btn primary" id="saveGdConfigBtn" style="background:linear-gradient(135deg,#10b981,#059669);color:#042f2e;"><i class="fa-solid fa-plug-circle-check"></i> Lưu & Kiểm tra Google Drive 15 GB</button>
+            <button type="button" class="git-btn" id="copyGdScriptBtn" style="border-color:rgba(16,185,129,0.4);color:#10b981;"><i class="fa-solid fa-code"></i> Copy mã Google Apps Script</button>
+        </div>
+        <div id="gdMsg" style="margin-top:12px;font-size:13px;font-weight:700;color:#34d399;display:none;"></div>
+    </div>
 </div>
 
 <footer class="v-footer">
@@ -232,13 +271,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const loginSec = document.getElementById('adminLoginSection');
     const dashSec = document.getElementById('adminDashSection');
 
-    function renderView() {
+    async function renderView() {
         if (VTeen.auth.isAdmin()) {
             loginSec.style.display = 'none';
             dashSec.style.display = 'block';
             const s = VTeen.auth.getSession();
             document.getElementById('adminNameLabel').textContent = s ? s.username : 'Admin';
             loadGhConfigUI();
+            await VTeen.gdrive.loadRemoteConfig();
+            loadGdConfigUI();
         } else {
             loginSec.style.display = 'flex';
             dashSec.style.display = 'none';
@@ -262,8 +303,33 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function loadGdConfigUI() {
+        const cfg = VTeen.gdrive.getConfig();
+        document.getElementById('adminGdScriptUrl').value = cfg.scriptUrl || '';
+        document.getElementById('adminGdClientId').value = cfg.clientId || '';
+        document.getElementById('adminGdClientSecret').value = cfg.clientSecret || '';
+        document.getElementById('adminGdRefreshToken').value = cfg.refreshToken || '';
+        document.getElementById('adminGdFolderId').value = cfg.folderId || '';
+
+        const badge = document.getElementById('gdStatusBadge');
+        if (VTeen.gdrive.isConfigured()) {
+            badge.className = 'git-status-badge ok';
+            badge.innerHTML = `<i class="fa-solid fa-check-circle"></i> Đã nối Google Drive 15 GB (${VTeen.gdrive.getMode() === 'apps_script' ? 'Apps Script' : 'OAuth2'})`;
+        } else {
+            badge.className = 'git-status-badge local';
+            badge.innerHTML = `<i class="fa-solid fa-circle-info"></i> Chưa nối API (Đang đọc 38 file tĩnh)`;
+        }
+    }
+
     function showGhMsg(text, isErr = false) {
         const el = document.getElementById('ghMsg');
+        el.style.display = 'block';
+        el.style.color = isErr ? '#f87171' : '#34d399';
+        el.textContent = text;
+    }
+
+    function showGdMsg(text, isErr = false) {
+        const el = document.getElementById('gdMsg');
         el.style.display = 'block';
         el.style.color = isErr ? '#f87171' : '#34d399';
         el.textContent = text;
@@ -319,12 +385,16 @@ document.addEventListener('DOMContentLoaded', () => {
             showGhMsg('⚠️ Vui lòng nhập đầy đủ Owner, Repo và Token trước khi đồng bộ!', true);
             return;
         }
-        showGhMsg('⏳ Đang đẩy dữ liệu movies.json & images.json lên GitHub...');
+        showGhMsg('⏳ Đang đẩy dữ liệu movies.json, images.json & drive.json lên GitHub...');
         try {
-            const movies = await VTeen.db.getMovies();
-            const images = await VTeen.db.getImages();
+            const [movies, images, driveFiles] = await Promise.all([
+                VTeen.db.getMovies(),
+                VTeen.db.getImages(),
+                VTeen.db.getDriveFiles()
+            ]);
             await VTeen.github.saveJsonFile('data/movies.json', movies, 'Sync movies.json from VTEEN Admin');
             await VTeen.github.saveJsonFile('data/images.json', images, 'Sync images.json from VTEEN Admin');
+            await VTeen.github.saveJsonFile('data/drive.json', driveFiles, 'Sync drive.json from VTEEN Admin');
             showGhMsg('✅ Đã đồng bộ dữ liệu lên kho GitHub thành công!');
         } catch (err) {
             showGhMsg('❌ Lỗi đồng bộ GitHub: ' + err.message, true);
@@ -338,6 +408,36 @@ document.addEventListener('DOMContentLoaded', () => {
         a.href = URL.createObjectURL(blob);
         a.download = 'movies.json';
         a.click();
+    });
+
+    document.getElementById('saveGdConfigBtn').addEventListener('click', async () => {
+        showGdMsg('⏳ Đang lưu và kiểm tra kết nối Google Drive 15 GB...');
+        try {
+            await VTeen.gdrive.saveConfig({
+                scriptUrl: document.getElementById('adminGdScriptUrl').value,
+                clientId: document.getElementById('adminGdClientId').value,
+                clientSecret: document.getElementById('adminGdClientSecret').value,
+                refreshToken: document.getElementById('adminGdRefreshToken').value,
+                folderId: document.getElementById('adminGdFolderId').value,
+                accountKey: 'drive1'
+            });
+            loadGdConfigUI();
+            if (VTeen.gdrive.isConfigured()) {
+                const quota = await VTeen.gdrive.getQuota(true);
+                const usedMb = (quota.usage / (1024 * 1024)).toFixed(2);
+                const limitGb = (quota.limit / (1024 * 1024 * 1024)).toFixed(2);
+                showGdMsg(`✅ Kết nối Google Drive 15 GB thành công! Đang dùng: ${usedMb} MB / ${limitGb} GB (${quota.percent}%)`);
+            } else {
+                showGdMsg('✅ Đã lưu cấu hình (Chế độ danh sách tĩnh).');
+            }
+        } catch (err) {
+            showGdMsg('❌ Lỗi kết nối Google Drive: ' + (err.message || err), true);
+        }
+    });
+
+    document.getElementById('copyGdScriptBtn').addEventListener('click', () => {
+        navigator.clipboard.writeText(VTeen.gdrive.getAppsScriptTemplate());
+        showGdMsg('✅ Đã copy mã Google Apps Script vào bộ nhớ tạm! Mở script.google.com để dán.');
     });
 
     renderView();

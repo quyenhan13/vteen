@@ -86,8 +86,11 @@
     let parsed;
     try {
         parsed = new URL(link);
+        if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
+            throw new Error('Unsupported protocol');
+        }
     } catch (e) {
-        root.innerHTML = '<div class="msg-center">Định dạng URL không hợp lệ.</div>';
+        root.innerHTML = '<div class="msg-center">Định dạng URL không hợp lệ hoặc bị chặn vì bảo mật.</div>';
         return;
     }
 
@@ -117,7 +120,7 @@
     function notifyParentError() {
         try {
             if (window.parent && window.parent !== window) {
-                window.parent.postMessage({ type: 'VTEEN_PLAYER_ERROR', url: link }, '*');
+                window.parent.postMessage({ type: 'VTEEN_PLAYER_ERROR', url: link }, window.location.origin);
             }
         } catch (e) {}
     }
@@ -125,7 +128,7 @@
     function notifyParentReady() {
         try {
             if (window.parent && window.parent !== window) {
-                window.parent.postMessage({ type: 'VTEEN_PLAYER_READY', url: link }, '*');
+                window.parent.postMessage({ type: 'VTEEN_PLAYER_READY', url: link }, window.location.origin);
             }
         } catch (e) {}
     }
@@ -229,6 +232,7 @@
             iframe.src = ytSrc;
         });
         window.addEventListener('message', function (e) {
+            if (e.origin !== 'https://www.youtube.com' && e.origin !== 'https://www.youtube-nocookie.com') return;
             try {
                 const data = JSON.parse(e.data);
                 if ((data.event === 'infoDelivery' && data.info && data.info.playerState === 0) ||
@@ -238,10 +242,11 @@
             } catch (err) {}
         });
     } else {
+        const safeSrc = link.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
         root.innerHTML = `
             <iframe
                 class="full-iframe"
-                src="${link.replace(/"/g, '&quot;')}"
+                src="${safeSrc}"
                 allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
                 allowfullscreen
                 referrerpolicy="no-referrer"

@@ -204,7 +204,7 @@
             </div>
             <div class="vtd-quota">
                 <div class="vtd-quota-top">
-                    <span class="vtd-quota-label"><i class="fa-solid fa-cloud"></i> BỘ NHỚ TRỰC TUYẾN</span>
+                    <span class="vtd-quota-label" id="quotaLabel"><i class="fa-solid fa-cloud"></i> BỘ NHỚ TRỰC TUYẾN</span>
                     <span class="vtd-quota-val" id="quotaText">Đang tính...</span>
                 </div>
                 <div class="vtd-quota-bar">
@@ -224,7 +224,11 @@
                     <i class="fa-solid fa-magnifying-glass"></i>
                     <input type="text" id="driveSearch" placeholder="Tìm kiếm tệp trong vũ trụ...">
                 </div>
-                <button class="vtd-upload-btn" id="openUploadBtn">
+                <button class="vtd-tab" id="openConnectDriveBtn" type="button" title="Cấu hình kết nối Google Drive 15 GB thật">
+                    <i class="fa-brands fa-google-drive" style="color:#10b981;"></i>
+                    <span id="driveConnStatusText">Kết nối Drive 15GB</span>
+                </button>
+                <button class="vtd-upload-btn" id="openUploadBtn" type="button">
                     <i class="fa-solid fa-cloud-arrow-up"></i> Tải tệp lên
                 </button>
             </div>
@@ -248,7 +252,7 @@
                     <a id="previewDownloadBtn" href="#" download class="vtd-upload-btn" style="flex:1; justify-content:center; text-decoration:none;">
                         <i class="fa-solid fa-download"></i> TẢI XUỐNG NGAY
                     </a>
-                    <a id="previewDirectBtn" href="#" target="_blank" rel="noopener" class="vtd-tab" style="justify-content:center; text-decoration:none;">
+                    <a id="previewDirectBtn" href="#" target="_blank" rel="noopener noreferrer" class="vtd-tab" style="justify-content:center; text-decoration:none;">
                         <i class="fa-solid fa-up-right-from-square"></i> Mở tab mới
                     </a>
                 </div>
@@ -258,7 +262,7 @@
                     </div>
                     <div class="vtd-share-row">
                         <input type="text" id="previewShareInput" readonly>
-                        <button class="vtd-upload-btn" id="copyShareBtn" style="padding:8px 14px;">
+                        <button class="vtd-upload-btn" id="copyShareBtn" type="button" style="padding:8px 14px;">
                             <i class="fa-solid fa-copy"></i> Copy
                         </button>
                     </div>
@@ -277,8 +281,8 @@
             <div class="vtd-modal-body">
                 <form id="driveUploadForm">
                     <div class="vtd-form-group">
-                        <label>Chọn tệp từ thiết bị (Tự động đẩy lên Git Repo nếu có GitHub Token)</label>
-                        <input type="file" id="uploadFileInput" accept="image/*,video/*,.pdf,.zip,.rar,.txt,.mp3">
+                        <label>Chọn tệp từ thiết bị (Tự động đẩy lên Google Drive 15 GB hoặc Kho Git)</label>
+                        <input type="file" id="uploadFileInput" accept="image/*,video/*,.pdf,.zip,.rar,.7z,.txt,.mp3,.wav,.m4a">
                     </div>
                     <div style="text-align:center; color:rgba(255,255,255,0.35); font-size:0.78rem; margin:10px 0;">— HOẶC NHẬP LINK GOOGLE DRIVE / URL —</div>
                     <div class="vtd-form-group">
@@ -290,9 +294,9 @@
                         <input type="text" id="uploadFileName" placeholder="Để trống sẽ tự lấy theo tên file">
                     </div>
                     <div class="vtd-form-group">
-                        <label>Nhánh lưu trữ</label>
+                        <label>Nhánh lưu trữ đích</label>
                         <select id="uploadAccountKey">
-                            <option value="drive1">Google Drive (drive1)</option>
+                            <option value="drive1">Google Drive 15 GB (drive1)</option>
                             <option value="git">Kho Git (git)</option>
                         </select>
                     </div>
@@ -305,6 +309,65 @@
         </div>
     </div>
 
+    <!-- Modal Kết Nối Google Drive 15 GB Thật -->
+    <div class="vtd-modal-backdrop" id="connectDriveModal">
+        <div class="vtd-modal">
+            <div class="vtd-modal-head">
+                <h3 class="vtd-modal-title"><i class="fa-brands fa-google-drive" style="color:#10b981;"></i> Kết nối Google Drive 15 GB Thật (drive1)</h3>
+                <button class="vtd-modal-close" id="closeConnectDriveBtn"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="vtd-modal-body">
+                <div style="background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.25); border-radius:12px; padding:12px 14px; margin-bottom:14px; font-size:0.8rem; color:#cbd5e1; line-height:1.55;">
+                    <div style="font-weight:800; color:#10b981; margin-bottom:6px;"><i class="fa-solid fa-bolt"></i> Cách nối ổ Google Drive 15 GB thật trong 1 phút (Miễn phí, Không lộ khóa):</div>
+                    1. Bấm nút <b>Copy mã Apps Script</b> bên dưới.<br>
+                    2. Mở <a href="https://script.google.com" target="_blank" rel="noopener noreferrer" style="color:#34d399;font-weight:700;">script.google.com</a> bằng nick Google Drive 15 GB -> Tạo dự án mới -> Dán mã vào và Lưu.<br>
+                    3. Bấm <b>Triển khai (Deploy) → Tùy chọn triển khai mới → Ứng dụng Web</b> (Thực thi dưới dạng: <b>Tôi</b>, Quyền truy cập: <b>Bất kỳ ai</b>) -> Copy URL dán vào ô dưới:
+                    <div style="margin-top:8px;">
+                        <button type="button" class="vtd-tab" id="copyAppsScriptBtn" style="color:#10b981; border-color:rgba(16,185,129,0.4);">
+                            <i class="fa-solid fa-code"></i> Copy mã Google Apps Script
+                        </button>
+                    </div>
+                </div>
+
+                <form id="connectDriveForm">
+                    <div class="vtd-form-group">
+                        <label>Google Apps Script Web App URL (Khuyên dùng)</label>
+                        <input type="url" id="gdScriptUrl" placeholder="https://script.google.com/macros/s/.../exec">
+                    </div>
+
+                    <details style="margin-bottom:14px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px 12px;">
+                        <summary style="cursor:pointer; font-size:0.8rem; font-weight:700; color:#94a3b8;">Tùy chọn nâng cao: Dùng Google OAuth2 (Client ID + Refresh Token)</summary>
+                        <div style="margin-top:12px;">
+                            <div class="vtd-form-group">
+                                <label>Google OAuth Client ID</label>
+                                <input type="text" id="gdClientId" placeholder="xxxx.apps.googleusercontent.com">
+                            </div>
+                            <div class="vtd-form-group">
+                                <label>Google OAuth Client Secret</label>
+                                <input type="password" id="gdClientSecret" placeholder="GOCSPX-...">
+                            </div>
+                            <div class="vtd-form-group">
+                                <label>Google OAuth Refresh Token</label>
+                                <input type="password" id="gdRefreshToken" placeholder="1//04...">
+                            </div>
+                            <div class="vtd-form-group" style="margin-bottom:0;">
+                                <label>Folder ID trên Google Drive (Tùy chọn)</label>
+                                <input type="text" id="gdFolderId" placeholder="Để trống sẽ lưu vào thư mục gốc">
+                            </div>
+                        </div>
+                    </details>
+
+                    <div id="connectDriveMsg" style="font-size:0.83rem; font-weight:700; margin-bottom:12px; display:none;"></div>
+                    <div style="display:flex; gap:10px;">
+                        <button type="submit" class="vtd-upload-btn" style="flex:1; justify-content:center; padding:12px;">
+                            <i class="fa-solid fa-plug-circle-check"></i> LƯU & ĐỒNG BỘ 15 GB NGAY
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script src="../assets/js/vteen-core.js"></script>
     <script src="../assets/js/universe-stream.js"></script>
     <script>
@@ -312,10 +375,11 @@
         let allFiles = [];
         let activeAccount = 'all';
         let searchQuery = '';
+        let liveQuota = null;
 
         function formatBytes(bytes) {
             const b = Number(bytes) || 0;
-            if (b <= 0) return 'N/A';
+            if (b <= 0) return '0 B';
             if (b < 1024) return b + ' B';
             if (b < 1024 * 1024) return (b / 1024).toFixed(1) + ' KB';
             if (b < 1024 * 1024 * 1024) return (b / (1024 * 1024)).toFixed(2) + ' MB';
@@ -333,7 +397,7 @@
             const mime = String(item.mime_type || '').toLowerCase();
             const path = String(item.file_path || item.file_name || '').toLowerCase();
             if (mime.startsWith('video/') || /\.(mp4|webm|mov|m4v|mkv)$/i.test(path)) return 'video';
-            if (mime.startsWith('image/') || /\.(jpg|jpeg|png|gif|webp|bmp|svg|avif)$/i.test(path)) return 'image';
+            if (mime.startsWith('image/') || /\.(jpg|jpeg|png|gif|webp|bmp|avif)$/i.test(path)) return 'image';
             return 'file';
         }
 
@@ -341,8 +405,9 @@
             if (item.file_path) {
                 return VTeen.url(item.file_path);
             }
-            if (item.drive_id) {
-                return 'https://drive.google.com/thumbnail?id=' + encodeURIComponent(item.drive_id) + '&sz=w600';
+            const cleanDriveId = VTeen.sanitizeDriveId(item.drive_id);
+            if (cleanDriveId) {
+                return 'https://drive.google.com/thumbnail?id=' + encodeURIComponent(cleanDriveId) + '&sz=w600';
             }
             return '';
         }
@@ -351,8 +416,9 @@
             if (item.file_path) {
                 return VTeen.url(item.file_path);
             }
-            if (item.drive_id) {
-                return 'https://drive.google.com/uc?export=download&id=' + encodeURIComponent(item.drive_id);
+            const cleanDriveId = VTeen.sanitizeDriveId(item.drive_id);
+            if (cleanDriveId) {
+                return 'https://drive.google.com/uc?export=download&id=' + encodeURIComponent(cleanDriveId);
             }
             return '#';
         }
@@ -362,11 +428,33 @@
             return base + 'p.html?code=' + encodeURIComponent(item.short_code || '');
         }
 
+        function updateDriveConnBadge() {
+            const statusText = document.getElementById('driveConnStatusText');
+            const labelEl = document.getElementById('quotaLabel');
+            if (VTeen.gdrive && VTeen.gdrive.isConfigured()) {
+                statusText.textContent = 'Google Drive 15GB: Đã nối';
+                if (labelEl) labelEl.innerHTML = '<i class="fa-brands fa-google-drive" style="color:#10b981;"></i> GOOGLE DRIVE 15 GB (LIVE)';
+            } else {
+                statusText.textContent = 'Kết nối Drive 15GB';
+                if (labelEl) labelEl.innerHTML = '<i class="fa-solid fa-cloud"></i> BỘ NHỚ TRỰC TUYẾN';
+            }
+        }
+
         function updateQuota() {
+            updateDriveConnBadge();
+            const driveFilesCount = allFiles.filter(f => (f.account_key || (f.drive_id ? 'drive1' : 'git')) === 'drive1').length;
+            if (liveQuota && liveQuota.limit > 0) {
+                const pct = Math.min(100, Math.max(2, Number(liveQuota.percent) || ((liveQuota.usage / liveQuota.limit) * 100)));
+                document.getElementById('quotaText').textContent =
+                    `${formatBytes(liveQuota.usage)} / ${formatBytes(liveQuota.limit)} (${liveQuota.percent}% • ${allFiles.length} tệp)`;
+                document.getElementById('quotaFill').style.width = pct.toFixed(1) + '%';
+                return;
+            }
             const totalBytes = allFiles.reduce((sum, f) => sum + (Number(f.file_size) || 0), 0);
             const quotaMax = 15 * 1024 * 1024 * 1024;
             const pct = Math.min(100, Math.max(2, (totalBytes / quotaMax) * 100));
-            document.getElementById('quotaText').textContent = formatBytes(totalBytes) + ' / 15 GB (' + allFiles.length + ' tệp)';
+            document.getElementById('quotaText').textContent =
+                `${formatBytes(totalBytes)} / 15.00 GB (${driveFilesCount} tệp Drive • ${allFiles.length} tổng)`;
             document.getElementById('quotaFill').style.width = pct.toFixed(1) + '%';
         }
 
@@ -397,7 +485,7 @@
                 const dlUrl = getDownloadUrl(item);
                 const code = VTeen.escapeHtml(item.short_code || '');
                 const name = VTeen.escapeHtml(item.file_name || item.short_code || 'Untitled');
-                const sizeText = formatBytes(item.file_size);
+                const sizeText = Number(item.file_size) > 0 ? formatBytes(item.file_size) : 'Google Drive';
                 const dateText = formatDate(item.created_at);
 
                 let previewMedia = '<i class="fa-solid fa-file-shield vtd-preview-icon"></i>';
@@ -424,7 +512,7 @@
                         </div>
                         <div class="vtd-actions">
                             <button type="button" class="vtd-btn-view" data-action="preview" data-code="${code}">XEM NGAY</button>
-                            <a href="${VTeen.escapeHtml(dlUrl)}" download="${name}" target="_blank" rel="noopener" class="vtd-btn-icon" title="Tải xuống">
+                            <a href="${VTeen.escapeHtml(dlUrl)}" download="${name}" target="_blank" rel="noopener noreferrer" class="vtd-btn-icon" title="Tải xuống">
                                 <i class="fa-solid fa-download"></i>
                             </a>
                             <button type="button" class="vtd-btn-icon" data-action="copy" data-code="${code}" title="Copy link chia sẻ">
@@ -450,21 +538,22 @@
 
             const ftype = detectType(item);
             const localUrl = item.file_path ? VTeen.url(item.file_path) : '';
+            const cleanDriveId = VTeen.sanitizeDriveId(item.drive_id);
             const dlUrl = getDownloadUrl(item);
             const shareUrl = getShareUrl(item);
 
             titleEl.textContent = item.file_name || item.short_code;
             dlBtn.href = dlUrl;
             dlBtn.setAttribute('download', item.file_name || item.short_code);
-            directBtn.href = localUrl || (item.drive_id ? `https://drive.google.com/file/d/${encodeURIComponent(item.drive_id)}/view` : shareUrl);
+            directBtn.href = localUrl || (cleanDriveId ? `https://drive.google.com/file/d/${encodeURIComponent(cleanDriveId)}/view` : shareUrl);
             shareInput.value = shareUrl;
 
             if (ftype === 'video' && localUrl) {
                 stage.innerHTML = `<video src="${VTeen.escapeHtml(localUrl)}" controls autoplay playsinline></video>`;
             } else if (ftype === 'image' && localUrl) {
                 stage.innerHTML = `<img src="${VTeen.escapeHtml(localUrl)}" alt="${VTeen.escapeHtml(item.file_name || '')}">`;
-            } else if (item.drive_id) {
-                stage.innerHTML = `<iframe src="https://drive.google.com/file/d/${encodeURIComponent(item.drive_id)}/preview" allow="autoplay; fullscreen"></iframe>`;
+            } else if (cleanDriveId) {
+                stage.innerHTML = `<iframe src="https://drive.google.com/file/d/${encodeURIComponent(cleanDriveId)}/preview" allow="autoplay; fullscreen"></iframe>`;
             } else {
                 stage.innerHTML = `<div style="padding:40px; text-align:center; color:#94a3b8;"><i class="fa-solid fa-file-circle-check fa-3x" style="color:#10b981;"></i><p style="margin-top:12px;">Tệp sẵn sàng tải xuống</p></div>`;
             }
@@ -483,10 +572,10 @@
             const s = String(input || '').trim();
             if (!s) return '';
             const m1 = s.match(/\/file\/d\/([a-zA-Z0-9_-]{15,})/);
-            if (m1) return m1[1];
+            if (m1) return VTeen.sanitizeDriveId(m1[1]);
             const m2 = s.match(/[?&]id=([a-zA-Z0-9_-]{15,})/);
-            if (m2) return m2[1];
-            if (/^[a-zA-Z0-9_-]{20,}$/.test(s)) return s;
+            if (m2) return VTeen.sanitizeDriveId(m2[1]);
+            if (/^[a-zA-Z0-9_-]{20,}$/.test(s)) return VTeen.sanitizeDriveId(s);
             return '';
         }
 
@@ -506,9 +595,11 @@
             }
 
             statusEl.style.display = 'block';
-            statusEl.textContent = 'Đang xử lý lưu trữ...';
+            statusEl.style.color = '#10b981';
+            statusEl.textContent = 'Đang kiểm tra bảo mật & xử lý lưu trữ...';
 
-            const shortCode = Math.random().toString(36).substring(2, 10) + Math.random().toString(36).substring(2, 6);
+            const shortCode = Array.from(crypto.getRandomValues(new Uint8Array(6)))
+                .map(b => b.toString(36)).join('').slice(0, 12);
             const nowStr = new Date().toISOString().slice(0, 19).replace('T', ' ');
             let filePath = '';
             let driveId = '';
@@ -519,28 +610,46 @@
 
             try {
                 if (file) {
+                    const check = await VTeen.validateUploadFile(file);
+                    if (!check.ok) {
+                        throw new Error(check.msg);
+                    }
                     fileName = fileName || file.name;
                     fileSize = file.size;
                     mimeType = file.type || mimeType;
-                    const ext = (file.name.split('.').pop() || 'bin').toLowerCase();
-                    const repoPath = `uploads/2026/04/vtd_${shortCode}.${ext}`;
 
-                    if (VTeen.github && VTeen.github.isConfigured()) {
-                        statusEl.textContent = 'Đang tải tệp trực tiếp lên GitHub Repository...';
+                    if (accountKey === 'drive1' && VTeen.gdrive && VTeen.gdrive.isConfigured()) {
+                        statusEl.textContent = 'Đang tải tệp trực tiếp lên Google Drive 15 GB (drive1)...';
+                        const uploaded = await VTeen.gdrive.uploadFile(file, fileName);
+                        driveId = uploaded.drive_id;
+                        fileName = uploaded.file_name || fileName;
+                        mimeType = uploaded.mime_type || mimeType;
+                        fileSize = uploaded.file_size || fileSize;
+                        accountKey = 'drive1';
+                        liveQuota = await VTeen.gdrive.getQuota(false).catch(() => liveQuota);
+                    } else if (VTeen.github && VTeen.github.isConfigured()) {
+                        statusEl.textContent = 'Đang tải tệp lên GitHub Repository...';
+                        const repoPath = `uploads/2026/04/vtd_${shortCode}.${check.ext}`;
                         await VTeen.github.uploadFile(repoPath, file, `Upload drive file ${fileName}`);
                         filePath = repoPath;
                         accountKey = 'git';
-                    } else {
+                    } else if (file.size <= 4 * 1024 * 1024) {
                         filePath = await new Promise((resolve, reject) => {
                             const reader = new FileReader();
                             reader.onload = () => resolve(String(reader.result));
                             reader.onerror = reject;
                             reader.readAsDataURL(file);
                         });
+                        accountKey = 'git';
+                    } else {
+                        throw new Error('Để tải tệp lớn lên ổ 15 GB, vui lòng bấm "Kết nối Drive 15GB" hoặc cấu hình GitHub Token!');
                     }
                 } else {
                     driveId = extractDriveId(rawUrl);
                     if (!driveId) {
+                        if (/^(javascript|vbscript|data):/i.test(rawUrl)) {
+                            throw new Error('URL không hợp lệ hoặc bị chặn vì lý do bảo mật.');
+                        }
                         filePath = rawUrl.replace(/^\/+/, '');
                     }
                     fileName = fileName || (driveId ? `Drive_${driveId.slice(0, 8)}` : rawUrl.split('/').pop() || 'Tệp mới');
@@ -570,15 +679,75 @@
                 statusEl.style.display = 'none';
                 document.getElementById('uploadModal').classList.remove('open');
             } catch (err) {
+                statusEl.style.color = '#ef4444';
                 statusEl.textContent = 'Lỗi: ' + (err && err.message ? err.message : 'Không thể lưu tệp');
+            }
+        }
+
+        function openConnectDriveModal() {
+            const cfg = VTeen.gdrive.getConfig();
+            document.getElementById('gdScriptUrl').value = cfg.scriptUrl || '';
+            document.getElementById('gdClientId').value = cfg.clientId || '';
+            document.getElementById('gdClientSecret').value = cfg.clientSecret || '';
+            document.getElementById('gdRefreshToken').value = cfg.refreshToken || '';
+            document.getElementById('gdFolderId').value = cfg.folderId || '';
+            document.getElementById('connectDriveMsg').style.display = 'none';
+            document.getElementById('connectDriveModal').classList.add('open');
+        }
+
+        async function handleConnectDriveSubmit(e) {
+            e.preventDefault();
+            const msgEl = document.getElementById('connectDriveMsg');
+            msgEl.style.display = 'block';
+            msgEl.style.color = '#10b981';
+            msgEl.textContent = '⏳ Đang lưu và kiểm tra kết nối Google Drive 15 GB...';
+
+            try {
+                await VTeen.gdrive.saveConfig({
+                    scriptUrl: document.getElementById('gdScriptUrl').value,
+                    clientId: document.getElementById('gdClientId').value,
+                    clientSecret: document.getElementById('gdClientSecret').value,
+                    refreshToken: document.getElementById('gdRefreshToken').value,
+                    folderId: document.getElementById('gdFolderId').value,
+                    accountKey: 'drive1'
+                });
+
+                if (VTeen.gdrive.isConfigured()) {
+                    const syncRes = await VTeen.gdrive.syncLiveFiles(allFiles);
+                    allFiles = syncRes.files;
+                    liveQuota = syncRes.quota || await VTeen.gdrive.getQuota(true);
+                    updateQuota();
+                    renderGrid();
+                    msgEl.textContent = `✅ Đã kết nối Google Drive 15 GB thành công! Đang dùng: ${formatBytes(liveQuota.usage)} / ${formatBytes(liveQuota.limit)}`;
+                    setTimeout(() => {
+                        document.getElementById('connectDriveModal').classList.remove('open');
+                    }, 1400);
+                } else {
+                    updateQuota();
+                    msgEl.textContent = 'Đã xóa cấu hình kết nối trực tiếp (Chuyển về chế độ đọc danh sách tĩnh).';
+                }
+            } catch (err) {
+                msgEl.style.color = '#ef4444';
+                msgEl.textContent = '❌ Lỗi kết nối Google Drive: ' + (err.message || err);
             }
         }
 
         async function init() {
             VTeen.initNavbar();
             allFiles = await VTeen.db.getDriveFiles();
+            await VTeen.gdrive.loadRemoteConfig();
             updateQuota();
             renderGrid();
+
+            if (VTeen.gdrive.isConfigured()) {
+                try {
+                    const syncRes = await VTeen.gdrive.syncLiveFiles(allFiles);
+                    allFiles = syncRes.files;
+                    liveQuota = syncRes.quota || await VTeen.gdrive.getQuota(false);
+                    updateQuota();
+                    renderGrid();
+                } catch (e) {}
+            }
 
             document.getElementById('accountTabs').addEventListener('click', (e) => {
                 const btn = e.target.closest('.vtd-tab');
@@ -610,6 +779,10 @@
                     setTimeout(() => { target.innerHTML = '<i class="fa-solid fa-link"></i>'; }, 1500);
                 } else if (action === 'delete') {
                     if (!confirm('Đại ca có chắc muốn xóa tệp này khỏi VTEEN DRIVE?')) return;
+                    const targetItem = allFiles.find(f => String(f.short_code) === String(code));
+                    if (targetItem && targetItem.drive_id && VTeen.gdrive && VTeen.gdrive.isConfigured()) {
+                        await VTeen.gdrive.deleteFile(targetItem.drive_id);
+                    }
                     allFiles = allFiles.filter(f => String(f.short_code) !== String(code));
                     await VTeen.db.saveDriveFiles(allFiles);
                     updateQuota();
@@ -640,6 +813,24 @@
                 if (e.target.id === 'uploadModal') document.getElementById('uploadModal').classList.remove('open');
             });
             document.getElementById('driveUploadForm').addEventListener('submit', handleUpload);
+
+            document.getElementById('openConnectDriveBtn').addEventListener('click', openConnectDriveModal);
+            document.getElementById('closeConnectDriveBtn').addEventListener('click', () => {
+                document.getElementById('connectDriveModal').classList.remove('open');
+            });
+            document.getElementById('connectDriveModal').addEventListener('click', (e) => {
+                if (e.target.id === 'connectDriveModal') document.getElementById('connectDriveModal').classList.remove('open');
+            });
+            document.getElementById('copyAppsScriptBtn').addEventListener('click', () => {
+                const code = VTeen.gdrive.getAppsScriptTemplate();
+                navigator.clipboard.writeText(code);
+                const btn = document.getElementById('copyAppsScriptBtn');
+                btn.innerHTML = '<i class="fa-solid fa-check"></i> Đã copy mã Apps Script!';
+                setTimeout(() => {
+                    btn.innerHTML = '<i class="fa-solid fa-code"></i> Copy mã Google Apps Script';
+                }, 2000);
+            });
+            document.getElementById('connectDriveForm').addEventListener('submit', handleConnectDriveSubmit);
         }
 
         document.addEventListener('DOMContentLoaded', init);

@@ -87,7 +87,7 @@
                                     <h2>Dang anh va video</h2>
                                     <p id="uploadSubtitle">Keo tha file de len song trong showcase va tao link chia se nhanh.</p>
                                 </div>
-                                <div class="upload-badge">Git Storage</div>
+                                <div class="upload-badge" id="storageBadge">Drive / Git</div>
                             </div>
 
                             <div class="drop-zone-modern" id="dropZone">
@@ -125,7 +125,7 @@
                     <span>Xem nhanh</span>
                     <span>Hinh noi bat</span>
                     <span>De su dung</span>
-                    <span>Git Native</span>
+                    <span>Google Drive 15GB</span>
                 </div>
             </div>
         </section>
@@ -197,6 +197,12 @@
     let playlist = [];
 
     async function loadGallery() {
+        await VTeen.gdrive.loadRemoteConfig();
+        const badgeEl = document.getElementById('storageBadge');
+        if (badgeEl) {
+            badgeEl.textContent = VTeen.gdrive.isConfigured() ? 'Google Drive 15GB' : 'Git Storage';
+        }
+
         const [images, posters] = await Promise.all([
             VTeen.db.getImages(),
             VTeen.db.getPosters()
@@ -206,13 +212,19 @@
         const sortedImages = [...images].sort((a, b) => (b.id || 0) - (a.id || 0));
         for (const item of sortedImages) {
             const path = String(item.file_path || '');
-            const ext = path.split('.').pop().toLowerCase();
-            if (path && !['mp4', 'mov', 'webm'].includes(ext)) {
-                rawList.push({
-                    src: VTeen.url(path),
-                    title: item.original_name || 'Upload',
-                    href: item.short_code ? `p.html?code=${encodeURIComponent(item.short_code)}` : 'phim.html'
-                });
+            const cleanDriveId = VTeen.sanitizeDriveId(item.drive_id);
+            const ext = (path || item.original_name || '').split('.').pop().toLowerCase();
+            if (!['mp4', 'mov', 'webm'].includes(ext)) {
+                const imgSrc = path
+                    ? VTeen.url(path)
+                    : (cleanDriveId ? `https://drive.google.com/thumbnail?id=${encodeURIComponent(cleanDriveId)}&sz=w600` : '');
+                if (imgSrc) {
+                    rawList.push({
+                        src: imgSrc,
+                        title: item.original_name || 'Upload',
+                        href: item.short_code ? `p.html?code=${encodeURIComponent(item.short_code)}` : 'phim.html'
+                    });
+                }
             }
         }
 
@@ -331,28 +343,40 @@
         }
 
         async function handleFileUpload(file) {
-            const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
-            const allowedExt = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'mp4', 'mov', 'webm'];
-            if (!allowedExt.includes(ext)) {
-                alert('Dinh dang file khong duoc ho tro.');
+            const check = await VTeen.validateUploadFile(file, {
+                allowedExt: ['jpg', 'jpeg', 'png', 'gif', 'webp', 'avif', 'mp4', 'mov', 'webm']
+            });
+            if (!check.ok) {
+                alert(check.msg);
                 return;
             }
+            const ext = check.ext;
 
             dropZone.classList.add('uploading');
             dropText.textContent = 'Dang tai len...';
 
             try {
+                await VTeen.gdrive.loadRemoteConfig();
                 const code = Array.from(crypto.getRandomValues(new Uint8Array(3)))
                     .map(b => b.toString(16).padStart(2, '0')).join('');
                 const now = new Date();
+                const nowStr = now.toISOString().replace('T', ' ').slice(0, 19);
                 const year = now.getFullYear();
                 const month = String(now.getMonth() + 1).padStart(2, '0');
                 const fileName = `img_${code}${Date.now().toString(16).slice(-2)}.${ext}`;
                 const relPath = `uploads/${year}/${month}/${fileName}`;
 
-                let finalPath = relPath;
-                if (VTeen.github.isConfigured()) {
+                let finalPath = '';
+                let driveId = '';
+
+                if (VTeen.gdrive.isConfigured()) {
+                    dropText.textContent = 'Dang tai len Google Drive 15GB...';
+                    const uploaded = await VTeen.gdrive.uploadFile(file, file.name);
+                    driveId = uploaded.drive_id;
+                } else if (VTeen.github.isConfigured()) {
+                    dropText.textContent = 'Dang tai len Kho Git...';
                     await VTeen.github.uploadFile(relPath, file, `Upload ${file.name} via VTEEN`);
+                    finalPath = relPath;
                 } else if (file.size <= 3 * 1024 * 1024) {
                     finalPath = await new Promise((resolve) => {
                         const reader = new FileReader();
@@ -360,31 +384,51 @@
                         reader.readAsDataURL(file);
                     });
                 } else {
-                    alert('De upload file lon len GitHub, vui long cau hinh GitHub Token trong Admin Panel!');
+                    alert('De upload file lon, vui long ket noi Google Drive 15GB trong tab Driver hoac cau hinh GitHub Token trong Admin!');
                     dropZone.classList.remove('uploading');
                     dropText.textContent = 'Chon hoac keo tha file';
                     return;
                 }
 
-                const images = await VTeen.db.getImages();
+                const [images, driveFiles] = await Promise.all([
+                    VTeen.db.getImages(),
+                    VTeen.db.getDriveFiles()
+                ]);
                 const nextId = images.reduce((m, i) => Math.max(m, i.id || 0), 0) + 1;
                 const newEntry = {
                     id: nextId,
                     short_code: code,
+                    drive_id: driveId,
                     file_path: finalPath,
                     original_name: file.name,
                     file_size: file.size,
-                    uploaded_at: now.toISOString().replace('T', ' ').slice(0, 19)
+                    uploaded_at: nowStr
                 };
                 images.unshift(newEntry);
                 await VTeen.db.saveImages(images, `Add upload entry ${code}`);
+
+                driveFiles.unshift({
+                    id: Date.now(),
+                    short_code: code,
+                    drive_id: driveId,
+                    account_key: driveId ? 'drive1' : 'git',
+                    file_name: file.name,
+                    file_path: finalPath,
+                    mime_type: file.type || (['mp4', 'mov', 'webm'].includes(ext) ? 'video/mp4' : 'image/jpeg'),
+                    file_size: file.size,
+                    created_at: nowStr
+                });
+                await VTeen.db.saveDriveFiles(driveFiles, `Add drive entry ${code}`);
 
                 const fullShareUrl = new URL(`p.html?code=${code}`, window.location.href).href;
                 if (resultBox) resultBox.classList.add('is-visible');
                 if (shareLink) shareLink.value = fullShareUrl;
 
+                const previewSrc = finalPath
+                    ? VTeen.url(finalPath)
+                    : `https://drive.google.com/thumbnail?id=${encodeURIComponent(driveId)}&sz=w600`;
                 playlist.unshift({
-                    src: VTeen.url(finalPath),
+                    src: previewSrc,
                     title: file.name,
                     href: `p.html?code=${code}`
                 });
